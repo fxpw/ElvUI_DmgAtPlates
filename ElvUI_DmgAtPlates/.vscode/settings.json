@@ -1,0 +1,33 @@
+{
+    "Lua.diagnostics.disable": [
+        "undefined-field",
+        "deprecated"
+    ],
+    "Lua.diagnostics.globals": [
+        "InterfaceOptionsFrame_OpenToCategory",
+        "DEFAULT_CHAT_FRAME",
+        "SlashCmdList",
+        "hash_SlashCmdList",
+        "GetNumPartyMembers",
+        "CLOSE",
+        "SELECTED_CHAT_FRAME",
+        "GAME_LOCALE",
+        "ElvUI",
+        "SCHOOL_MASK_PHYSICAL",
+        "SCHOOL_MASK_HOLY",
+        "SCHOOL_MASK_FIRE",
+        "SCHOOL_MASK_NATURE",
+        "SCHOOL_MASK_FROST",
+        "SCHOOL_MASK_SHADOW",
+        "SCHOOL_MASK_ARCANE",
+        "ACTION_SPELL_MISSED_ABSORB",
+        "ACTION_SPELL_MISSED_BLOCK",
+        "ACTION_SPELL_MISSED_DEFLECT",
+        "ACTION_SPELL_MISSED_DODGE",
+        "ACTION_SPELL_MISSED_EVADE",
+        "ACTION_SPELL_MISSED_IMMUN",
+        "ACTION_SPELL_MISSED_MISS",
+        "ACTION_SPELL_MISSED_PARRY",
+        "frame"
+    ]
+}

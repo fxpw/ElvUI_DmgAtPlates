@@ -1,0 +1,13 @@
+## Interface: 30300
+## Title: |cff1784d1E|r|cffe5e3e3lvUI |cff1784d1D|r|cffe5e3e3mg |cff1784d1A|r|cffe5e3e3t |cff1784d1P|r|cffe5e3e3lates
+## Author: fxpw
+## Version: 1.02
+## Notes: Цифорки урона на плейтах как на офе
+
+## RequiredDeps: ElvUI
+## DefaultState: Enabled
+
+Libs\Libs.xml
+
+Locales\Locale.xml
+ElvUI_DmgAtPlates.lua
