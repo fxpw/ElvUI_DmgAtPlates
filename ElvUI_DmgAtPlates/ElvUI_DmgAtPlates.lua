@@ -815,17 +815,20 @@ end
 ----------------------------------------------------------------------------------------------------
 
 function DAN:OnEnable()
-	DAN.DmgTextFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-	DAN.DmgTextFrame:SetScript("OnEvent",function(event,...)
-		ChckDmgEvnt(_,_,...)
-	end)
+	if E.db.DmgAtPlates.onorof then
+		DAN.DmgTextFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+		DAN.DmgTextFrame:SetScript("OnEvent",function(event,...)
+			ChckDmgEvnt(_,_,...)
+		end)
+	end
 end
 
 
 
 function DAN:OnDisable()
 	if not E.db.DmgAtPlates.onorof then
-		-- NP:Unhook(NP,"OnUpdate")
+	--NP:Unhook(NP,"OnUpdate")
+		DAN.DmgTextFrame:UnregisterAllEvents()
 	end
 end
 
