@@ -9,16 +9,14 @@ local DAN = E:NewModule('ElvUI_DmgAtPlates', 'AceTimer-3.0', 'AceHook-3.0', 'Ace
 DAN.DmgTextFrame = CreateFrame("Frame", nil, UIParent)
 local LibEasing = LibStub("LibEasing-1.0")
 local addonName, ns = ...
-local L = LibStub("AceLocale-3.0"):GetLocale("ElvUI_DmgAtPlates")
+local Loc = LibStub("AceLocale-3.0"):GetLocale("ElvUI_DmgAtPlates")
 
 
-----------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------
--------------------------------------DmgAtNameplates all functions
-----------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------
+-------------------------------------DmgAtNameplates all functions and const
+------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------
 
 local CreateFrame = CreateFrame
 local mtfl, mtpw, mtrn = math.floor, math.pow, math.random
@@ -48,9 +46,11 @@ local ANIMATION_RAINFALL_Y_MAX = 100
 local ANIMATION_RAINFALL_Y_START_MIN = 5
 local ANIMATION_RAINFALL_Y_START_MAX = 15
 
-
 local AutoAttack = select(1, GetSpellInfo(6603))
+local AutoAttackPet = select(1, GetSpellInfo(315235))
+
 local AutoShot = select(1, GetSpellInfo(75))
+
 
 -- local animationValues = {
 -- 	["verticalUp"] = L["Vertical Up"],
@@ -126,17 +126,54 @@ local MISS_EVENT_STRINGS = {
 	["IMMUNE"] = ACTION_SPELL_MISSED_IMMUN,
 	["MISS"] = ACTION_SPELL_MISSED_MISS,
 	["PARRY"] = ACTION_SPELL_MISSED_PARRY,
-	["REFLECT"] = L["Reflected"],
-	["RESIST"] = L["Resisted"]
+	["REFLECT"] = Loc["Reflected"],
+	["RESIST"] = Loc["Resisted"]
+}
+------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------
+--------------------------------------------- lcls
+------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------
+
+local dse = {
+	DAMAGE_SHIELD = true,
+	SPELL_DAMAGE = true,
+	SPELL_PERIODIC_DAMAGE = true,
+	SPELL_BUILDING_DAMAGE = true,
+	RANGE_DAMAGE = true
 }
 
+local mse = {
+	SPELL_MISSED = true,
+	SPELL_PERIODIC_MISSED = true,
+	RANGE_MISSED = true,
+	SPELL_BUILDING_MISSED = true,
+	-- SWING_MISSED = true
+}
+
+local hse = {
+	SPELL_HEAL = true
+}
+local csi = {
+	SPELL_INTERRUPT = true
+}
+
+-- local cleu = "COMBAT_LOG_EVENT_UNFILTERED"
+-- local ptc = "PLAYER_TARGET_CHANGED"
+local pn = GetUnitName("player")
+local pgui = UnitGUID("player")
 
 
-----------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------
+local ElvUI_PDFrame = CreateFrame("Frame","ElvUI_PDF",UIParent)
+ElvUI_PDFrame:SetPoint("CENTER",UIParent,"CENTER",0,-100)
+ElvUI_PDFrame:SetSize(32,32)
+ElvUI_PDFrame:Show()
+
+------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------
 -------------------------------------------- fontstring
-----------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------
 
 local function getFontPath(fontName)
 	local fontPath = "Fonts\\FRIZQT__.TTF"
@@ -160,8 +197,7 @@ local function getFontString(f)
 	end
 
 	fontString:SetFont(getFontPath(defaultFont), 15, "OUTLINE")
-
-		fontString:SetShadowOffset(0, 0)
+	fontString:SetShadowOffset(0, 0)
 
 	fontString:SetAlpha(1)
 	fontString:SetDrawLayer("BACKGROUND")
@@ -238,48 +274,11 @@ local STRATAS = {
 	"TOOLTIP"
 }
 
-----------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------
------------------------------------------------------------------------------------ lcls
-----------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------
-
-local dse = {
-	DAMAGE_SHIELD = true,
-	SPELL_DAMAGE = true,
-	SPELL_PERIODIC_DAMAGE = true,
-	SPELL_BUILDING_DAMAGE = true,
-	RANGE_DAMAGE = true
-}
-
-local mse = {
-	SPELL_MISSED = true,
-	SPELL_PERIODIC_MISSED = true,
-	RANGE_MISSED = true,
-	SPELL_BUILDING_MISSED = true
-}
-
-local hse = {
-
-}
-
-local cleu ="COMBAT_LOG_EVENT_UNFILTERED"
-local ptc ="PLAYER_TARGET_CHANGED"
-local pn = GetUnitName("player")
-
-----------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------- функции
-----------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------
-
-
-
 
 ------------------------------------------------------------------------------------------
----------------------------------------------
+------------------------------------------------------------------------------------------
 --------------------------------------------- anmt
----------------------------------------------
+------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------
 local function verticalPath(elapsed, duration, distance)
 	return 0, LibEasing.InQuad(elapsed, 0, distance, duration)
@@ -410,53 +409,92 @@ function DAN:Animate(fontString, anchorFrame, duration, animation)
   -- print(fontString.anchorFrame)
 end
 ------------------------------------------------------------------------------------------
----------------------------------------------
---------------------------------------------- dde
----------------------------------------------
 ------------------------------------------------------------------------------------------
-
-local function DoDmgEvnt(plate,f,...)
+--------------------------------------------- cde
+------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------
+local BITMASK_PETS = COMBATLOG_OBJECT_TYPE_PET + COMBATLOG_OBJECT_TYPE_GUARDIAN
+local function ChckDmgEvnt(plate,f,...)
 	if not E.db.DmgAtPlates.onorof then return end
-	local vnt,tm,sbvnt,_,whcst,_,guid,tgtcst,_,splld,spllname,schl,slldmg,_,_,_,_,_,crt,_,_,_,_,_,_,_ = ...
-	-- print(vnt,tm,sbvnt,_,whcst,_,guid,tgtcst,_,splld,spllname,schl,slldmg,_,_,_,_,_,crt,_,_,_,_,_,_,_)
--- print("zap")
-	-- f.guid = guid
-	if dse[sbvnt] then
-		if whcst == pn and f.guid == guid then
-			-- print(spllname.." Нанесло "..tgtcst.." "..slldmg.." Урона")
-			-- f.guid = guid
-			-- print(f.guid)
-			DAN:DamageEvent(f, spllname, slldmg, schl, crt, splld)
-		end
-	elseif  sbvnt == "SWING_DAMAGE" and f.guid == guid then
-		if whcst == pn then
-			-- f.guid = guid
-			DAN:DamageEvent(f, AutoAttack, splld, 1, crt, 6603)
-		end
-	elseif mse[sbvnt] and f.guid == guid then
-		if whcst == pn then
-			-- f.guid = guid
-			DAN:MissEvent(f, spllname, slldmg, splld)
+	-- local vnt1,tm2,sbvnt3,guidwhcst4,whcst5,flags6,guid7,tgtcst8,_,splld10,spllname11,schl12,slldmg13,infodis14,intrspll15,healcrt16,_,_,crt19,_,_,_,_,_,_,_ = ...
+	local args = {...}
+	-- for k,v in pairs(args) do
+	-- 	print(k,v)
+	-- end
+	-- print(args[3])
+	-- if pgui ~= args[4] then return end
+	if args[7] == pgui and E.db.DmgAtPlates.showplayerdtt then
+		-- if frame.guid == args[7] then
+			if dse[args[3]] then
+				DAN:DamageEvent(ElvUI_PDF, args[11], args[13], args[12], args[19], args[10])
+			elseif  args[3] == "SWING_DAMAGE" then
+				DAN:DamageEvent(ElvUI_PDF, AutoAttack, args[10], 1, args[19], 6603)
+			elseif mse[args[3]]  then
+				DAN:MissEvent(ElvUI_PDF, args[11], args[13], args[10])
+			elseif args[3] == "SPELL_DISPEL" then
+				DAN:DispelEvent(ElvUI_PDF, args[11], args[14], args[13])
+			elseif hse[args[3]] and E.db.DmgAtPlates.showtargethtt then
+				DAN:HealEvent(ElvUI_PDF, args[11], args[13], args[16], args[10])
+			elseif csi[args[3]] then
+				DAN:SpellInterruptEvent(ElvUI_PDF, args[11], args[10], args[14])
+			elseif args[3] == "SWING_MISSED" then
+				DAN:MissEvent(ElvUI_PDF, AutoAttack, AutoAttack , 6603)
+			end
+			return
+		-- end
+	end
+	if E.db.DmgAtPlates.showtargetdtt then
+		for frame in pairs(NP.VisiblePlates) do
+			if pgui == args[4] then --player events
+				if frame.guid == args[7] then
+					if dse[args[3]] then
+						DAN:DamageEvent(frame, args[11], args[13], args[12], args[19], args[10])
+					elseif  args[3] == "SWING_DAMAGE" then
+						DAN:DamageEvent(frame, AutoAttack, args[10], 1, args[19], 6603)
+					elseif mse[args[3]]  then
+						DAN:MissEvent(frame, args[11], args[13], args[10])
+					elseif args[3] == "SPELL_DISPEL" then
+						DAN:DispelEvent(frame, args[11], args[14], args[13])
+					elseif hse[args[3]] and E.db.DmgAtPlates.showtargethtt then
+						DAN:HealEvent(frame, args[11], args[13], args[16], args[10])
+					elseif csi[args[3]] then
+						DAN:SpellInterruptEvent(frame, args[11], args[10], args[14])
+					elseif args[3] == "SWING_MISSED" then
+						DAN:MissEvent(frame, AutoAttack, AutoAttack , 6603)
+					end
+					return
+				end
+			elseif bit.band(args[6], BITMASK_PETS) > 0 and bit.band(args[6], COMBATLOG_OBJECT_AFFILIATION_MINE) > 0 and E.db.DmgAtPlates.showpetrdtt then -- pet/guard events
+				if pgui ~= args[4] then
+					if frame.guid == args[7] then
+						if dse[args[3]] then
+							DAN:DamageEvent(frame, args[11], args[13], "pet", args[19], args[10])
+						elseif args[3] == "SWING_DAMAGE" then
+							DAN:DamageEvent(frame, AutoAttackPet, args[10], "pet", args[19], 315235)
+						elseif mse[args[3]] then
+							DAN:MissEventPet(frame, args[11], args[13], args[10])
+						end
+					end
+				end
+			end
 		end
 	end
-
-
 end
 
 
-----------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------- damageevents
-----------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------
+---------------------------------------------de me de he ise
+------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------
 local numDamageEvents = 0
 local lastDamageEventTime
 local runningAverageDamageEvents = 0
-function DAN:DamageEvent(plate, spellName, amount, school, crit, spellId)
+function DAN:DamageEvent(f, spellName, amount, school, crit, spellId)
 	local text, animation, pow, size, alpha
 	----- определение чего то спеллнейма
   local autoattack = spellName == AutoAttack or spellName == AutoShot or spellName == "pet"
-	--------- определение анимации
+	--------- animation
 	if (autoattack and crit) then
 		-- animation = "verticalUp"
 		animation = "verticalUp"
@@ -500,15 +538,14 @@ function DAN:DamageEvent(plate, spellName, amount, school, crit, spellId)
   numDamageEvents = numDamageEvents + 1
   lastDamageEventTime = GetTime()
   -- print(plate, text, size, alpha, animation, spellId, pow, spellName)
-	DAN:DisplayText(plate, text, size, alpha, animation, spellId, pow, spellName)
+	DAN:DisplayText(f, text, size, alpha, animation, spellId, pow, spellName)
 end
-
 
 function DAN:MissEvent(f, spellName, missType, spellId)
 	local text, animation, pow, size, alpha, color
 	-- local isTarget = (UnitGUID("target") == guid)
 	----------------------- animation
-	animation = "verticalUp"
+	animation = "verticalDown"
 	------------color
 	color = "ffff00"
 	----------------- size
@@ -522,18 +559,97 @@ function DAN:MissEvent(f, spellName, missType, spellId)
 
 	self:DisplayText(f, text, size, alpha, animation, spellId, pow, spellName)
 end
+function DAN:MissEventPet(f, spellName, missType, spellId)
+	local text, animation, pow, size, alpha, color
+	-- local isTarget = (UnitGUID("target") == guid)
+	----------------------- animation
+	animation = "verticalDown"
+	------------color
+	color = "ffff00"
+	----------------- size
+	size = 20
+	---------------- alpha
+	alpha = 1
+	pow = true
+	------------- text
+	text = MISS_EVENT_STRINGS[missType] or ACTION_SPELL_MISSED_MISS
+	text = "\124cff" .. color .."Питомец ".. text .. "\124r"
 
----------------------------------------------
----------------------------------------------
----------------------------------------------displaytext
----------------------------------------------
----------------------------------------------
+	self:DisplayText(f, text, size, alpha, animation, spellId, pow, spellName)
+end
+
+function DAN:DispelEvent(f, spellName, infodis, spellId)
+	local text, animation, pow, size, alpha, color
+	-- local isTarget = (UnitGUID("target") == guid)
+	----------------------- animation
+	animation = "fountain"
+	------------color
+	color = "ffff00"
+	----------------- size
+	size = 20
+	---------------- alpha
+	alpha = 1
+	pow = false
+	------------- text
+	text = infodis
+	text = "\124cff" .. color .. text .. "\124r"
+
+	self:DisplayText(f, text, size, alpha, animation, spellId, pow, spellName)
+end
+
+function DAN:HealEvent(f, spllname, slldmg, healcrt, splld)
+	local text, animation, pow, size, alpha, color
+	-- local isTarget = (UnitGUID("target") == guid)
+	----------------------- animation
+	if healcrt then
+		animation = "verticalUp"
+	else
+		animation = "fountain"
+	end
+	------------color
+	color = "ffff00"
+	----------------- size
+	size = 20
+	---------------- alpha
+	alpha = 1
+	pow = false
+	------------- text
+	text = format("%.1f", slldmg / 1000)
+	text = text .. "k"
+	text = "\124cff" .. color .. text .. "\124r"
+
+	self:DisplayText(f, text, size, alpha, animation, splld, pow, spllname)
+end
+
+function DAN:SpellInterruptEvent(f,  spllname, splld, intrspll)
+	local text, animation, pow, size, alpha, color
+	-- local isTarget = (UnitGUID("target") == guid)
+	----------------------- animation
+	animation = "verticalUp"
+	------------color
+	color = "ffff00"
+	----------------- size
+	size = 20
+	---------------- alpha
+	alpha = 1
+	pow = true
+	------------- text
+	text = "Прервано ".."{"..intrspll.."}"
+	-- text = text .. "k"
+	text = "\124cff" .. color .. text .. "\124r"
+
+	self:DisplayText(f, text, size, alpha, animation, splld, pow, spllname)
+end
+
+------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------
+--------------------------------------------- dt
+------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------
 function DAN:DisplayText(f, text, size, alpha, animation, spellId, pow, spellName)
 	local fontString
 	local icon
-	-- local nameplate
-	-- nameplate = plate
-	--   local plateName1 = LNP:GetName(plate)
+
 	fontString = getFontString(f)
 
 	fontString.DANText = text
@@ -562,13 +678,7 @@ function DAN:DisplayText(f, text, size, alpha, animation, spellId, pow, spellNam
 		icon:Show()
 		icon:SetTexture(texture)
 		icon:SetSize(size * 1, size * 1)
-		icon:SetPoint(
-			inversePositions["RIGHT"],
-			fontString,
-			"RIGHT",
-			0,
-			0
-		)
+		icon:SetPoint(inversePositions["RIGHT"], fontString, "RIGHT", 0, 0)
 		icon:SetAlpha(alpha)
 		fontString.icon = icon
 	else
@@ -603,7 +713,7 @@ function DAN:DmgAtPlatesOptions()
 			tabs = {
 				order = 1,
 				type = "group",
-				name = L["common"],
+				name = Loc["common"],
 				get = function(info)  return E.db.DmgAtPlates[info[#info]] end,
 				set = function(info, value)
 					E.db.DmgAtPlates[info[#info]] = value
@@ -612,17 +722,17 @@ function DAN:DmgAtPlatesOptions()
 					header = {
 						order = 1,
 						type = "header",
-						name = L["commondesc"]
+						name = Loc["commondesc"]
 					},
 					onorof = {
 						order = 2,
 						type = "toggle",
-						name = L["onorof"],
-						desc = L["onorofdesc"],
+						name = Loc["onorof"],
+						desc = Loc["onorofdesc"],
 						get = function(info) return E.db.DmgAtPlates.onorof end,
 						set = function(info, value)
 							E.db.DmgAtPlates.onorof = value
-							if not value then
+							if not E.db.DmgAtPlates.onorof then
 								DAN:OnDisable()
 							else
 								DAN:OnEnable()
@@ -632,6 +742,46 @@ function DAN:DmgAtPlatesOptions()
 							-- else
 							-- 	print("NET")
 							-- end
+						end
+					},
+					showtargetdt = {
+						order = 3,
+						type = "toggle",
+						name = Loc["showtargetdt"],
+						desc = Loc["showtargetdtdesc"],
+						get = function(info) return E.db.DmgAtPlates.showtargetdtt end,
+						set = function(info, value)
+							E.db.DmgAtPlates.showtargetdtt = value
+						end
+					},
+					showtargetht = {
+						order = 4,
+						type = "toggle",
+						name = Loc["showtargetht"],
+						desc = Loc["showtargethtdesc"],
+						get = function(info) return E.db.DmgAtPlates.showtargethtt end,
+						set = function(info, value)
+							E.db.DmgAtPlates.showtargethtt = value
+						end
+					},
+					showpetrdt = {
+						order = 5,
+						type = "toggle",
+						name = Loc["showpetrdt"],
+						desc = Loc["showpetrdtdesc"],
+						get = function(info) return E.db.DmgAtPlates.showpetrdtt end,
+						set = function(info, value)
+							E.db.DmgAtPlates.showpetrdtt = value
+						end
+					},
+					showplayerdt = {
+						order = 6,
+						type = "toggle",
+						name = Loc["showplayerdt"],
+						desc = Loc["showplayerdtdesc"],
+						get = function(info) return E.db.DmgAtPlates.showplayerdtt end,
+						set = function(info, value)
+							E.db.DmgAtPlates.showplayerdtt = value
 						end
 					},
 				},
@@ -645,54 +795,30 @@ function DAN:PLAYER_ENTERING_WORLD(...)
 end
 
 function DAN:Initialize()
-	if not E.db.DmgAtPlates then
-		E.db.DmgAtPlates = {}
-		E.db.DmgAtPlates.onorof = false
-	end
+	-- if not E.db.DmgAtPlates then
+		E.db.DmgAtPlates = E.db.DmgAtPlates or {}
+		E.db.DmgAtPlates.onorof = E.db.DmgAtPlates.onorof or false
+		E.db.DmgAtPlates.showtargetdtt = E.db.DmgAtPlates.showtargetdtt or false
+		E.db.DmgAtPlates.showtargethtt = E.db.DmgAtPlates.showtargethtt or false
+		E.db.DmgAtPlates.showpetrdtt = E.db.DmgAtPlates.showpetrdtt or false
+		E.db.DmgAtPlates.showplayerdtt = E.db.DmgAtPlates.showplayerdtt or false
+
+	-- end
 	EP:RegisterPlugin(addonName, self.DmgAtPlatesOptions)
 	self:RegisterEvent('PLAYER_ENTERING_WORLD')
 end
 
-
-----------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------
--------------------------------------fnct
-----------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------
-function DAN:CreateDataText(frame)
-	frame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-	frame:SetScript("OnEvent",function(event,...)
-		-- print("1")
-		-- if event == cleu then
-			-- if frame.guid then
-				DoDmgEvnt(_,frame,...)
-			-- end
-		-- end
-	end)
-
-end
-
-
-----------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------
 -------------------------------------cmnfnct
 ----------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------
+
 function DAN:OnEnable()
-	-- if E.db.DmgAtPlates.onorof then
-	if not NP:IsHooked(NP,"OnUpdate") then
-		NP:SecureHook(NP,"OnUpdate",function()
-			for frame in pairs(NP.VisiblePlates) do
-				-- if  E.db.DmgAtPlates.onorof then
-					DAN:CreateDataText(frame)
-				-- end
-			end
-		end)
-	end
+	DAN.DmgTextFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+	DAN.DmgTextFrame:SetScript("OnEvent",function(event,...)
+		ChckDmgEvnt(_,_,...)
+	end)
 end
 
 
