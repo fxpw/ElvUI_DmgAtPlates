@@ -1,18 +1,18 @@
 ---@diagnostic disable-next-line: deprecated
 local E, L, V, P, G, _ = unpack(ElvUI);
-
-
 local NP = E:GetModule('NamePlates');
-
-local EP = E.Libs.EP --elvuiplugin
+local EP = E.Libs.EP 
 local DAN = E:NewModule('ElvUI_DmgAtPlates', 'AceTimer-3.0', 'AceHook-3.0', 'AceEvent-3.0')
-DAN.DmgTextFrame = CreateFrame("Frame", nil, UIParent)
-DAN.DmgTextFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 local LibEasing = LibStub("LibEasing-1.0")
-local addonName, ns = ...
 local Loc = LibStub("AceLocale-3.0"):GetLocale("ElvUI_DmgAtPlates")
 
-
+-------------------------------------------------dmg text frame
+DAN.DmgTextFrame = CreateFrame("Frame", nil, UIParent)
+-------------------------------------------------player events frame
+local ElvUI_PDFrame = CreateFrame("Frame","ElvUI_PDF",UIParent)
+ElvUI_PDFrame:SetPoint("CENTER",UIParent,"CENTER",0,-100)
+ElvUI_PDFrame:SetSize(32,32)
+ElvUI_PDFrame:Show()
 ------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------
 -------------------------------------DmgAtNameplates all functions and const
@@ -52,44 +52,6 @@ local AutoAttackPet = select(1, GetSpellInfo(315235))
 
 local AutoShot = select(1, GetSpellInfo(75))
 
-
--- local animationValues = {
--- 	["verticalUp"] = L["Vertical Up"],
--- 	["verticalDown"] = L["Vertical Down"],
--- 	["fountain"] = L["Fountain"],
--- 	["rainfall"] = L["Rainfall"],
--- 	["disabled"] = L["Disabled"]
--- }
-
--- local fontFlags = {
--- 	[""] = L["None"],
--- 	["OUTLINE"] = L["Outline"],
--- 	["THICKOUTLINE"] = L["Thick Outline"],
--- 	["nil, MONOCHROME"] = L["Monochrome"],
--- 	["OUTLINE , MONOCHROME"] = L["Monochrome Outline"],
--- 	["THICKOUTLINE , MONOCHROME"] = L["Monochrome Thick Outline"]
--- }
-
--- local stratas = {
--- 	["BACKGROUND"] = L["Background"],
--- 	["LOW"] = L["Low"],
--- 	["MEDIUM"] = L["Medium"],
--- 	["HIGH"] = L["High"],
--- 	["DIALOG"] = L["Dialog"],
--- 	["TOOLTIP"] = L["Tooltip"]
--- }
-
--- local positionValues = {
--- 	["TOP"] = L["Top"],
--- 	["RIGHT"] = L["Right"],
--- 	["BOTTOM"] = L["Bottom"],
--- 	["LEFT"] = L["Left"],
--- 	["TOPRIGHT"] = L["Top Right"],
--- 	["TOPLEFT"] = L["Top Left"],
--- 	["BOTTOMRIGHT"] = L["Bottom Right"],
--- 	["BOTTOMLEFT"] = L["Bottom Left"],
--- 	["CENTER"] = L["Center"]
--- }
 
 local inversePositions = {
 	["BOTTOM"] = "TOP",
@@ -153,22 +115,21 @@ local mse = {
 }
 
 local hse = {
-	SPELL_HEAL = true
+	SPELL_HEAL = true,
+	SPELL_PERIODIC_HEAL = true
+
 }
 local csi = {
 	SPELL_INTERRUPT = true
 }
 
--- local cleu = "COMBAT_LOG_EVENT_UNFILTERED"
--- local ptc = "PLAYER_TARGET_CHANGED"
+local cleu = "COMBAT_LOG_EVENT_UNFILTERED"
+local ptc = "PLAYER_TARGET_CHANGED"
 local pn = GetUnitName("player")
+local pguid = UnitGUID("player")
 
 
 
-local ElvUI_PDFrame = CreateFrame("Frame","ElvUI_PDF",UIParent)
-ElvUI_PDFrame:SetPoint("CENTER",UIParent,"CENTER",0,-100)
-ElvUI_PDFrame:SetSize(32,32)
-ElvUI_PDFrame:Show()
 
 ------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------
@@ -628,196 +589,114 @@ local BITMASK_PETS = COMBATLOG_OBJECT_TYPE_PET + COMBATLOG_OBJECT_TYPE_GUARDIAN
 function DAN:ChckDmgEvnt(...)
 	if not E.db.DmgAtPlates.onorof then return end
 	-- print("rab")
-	-- local vnt1,tm2,sbvnt3,guidwhcst4,whcst5,flags6,guid7,tgtcst8,_,splld10,spllname11,schl12,slldmg13,infodis14,intrspll15,healcrt16,_,_,crt19,_,_,_,_,_,_,_ = ...
+	-- local vnt1,tm2,sbvnt3,guidwhcst4,whcst5,flags6,tgtguid7,tgtcst8,_,splld10,spllname11,schl12,slldmg13,infodis14,intrspll15,healcrt16,_,_,crt19,_,_,_,_,_,_,_ = ...
 	local args = {...}
-	if  E.db.DmgAtPlates.showplayerdtt then
-		local pgui = UnitGUID("player")
-		if args[7] == pgui then
-			if dse[args[3]] then
-				DAN:DamageEvent(ElvUI_PDF, args[11], args[13], args[12], args[19], args[10])
-				-- print(641)
-			elseif  args[3] == "SWING_DAMAGE" then
-				DAN:DamageEvent(ElvUI_PDF, AutoAttack, args[10], 1, args[19], 6603)
-			elseif mse[args[3]]  then
-				DAN:MissEvent(ElvUI_PDF, args[11], args[13], args[10])
-			elseif args[3] == "SPELL_DISPEL" then
-				DAN:DispelEvent(ElvUI_PDF, args[11], args[14], args[13])
-			elseif hse[args[3]] and E.db.DmgAtPlates.showtargethtt then
-				DAN:HealEvent(ElvUI_PDF, args[11], args[13], args[16], args[10])
-			elseif csi[args[3]] then
-				DAN:SpellInterruptEvent(ElvUI_PDF, args[11], args[10], args[14])
-			elseif args[3] == "SWING_MISSED" then
-				DAN:MissEvent(ElvUI_PDF, AutoAttack, AutoAttack , 6603)
-			end
-			return
-		end
-	end
-	if E.db.DmgAtPlates.showtargetdtt then
-		local pgui = UnitGUID("player")
-		for frame in pairs(NP.VisiblePlates) do
-			if pgui == args[4] then --player events
+	-- for k,v in pairs(args) do
+	-- 	print(k,v)
+	-- end
+	if args[4] == pguid and args[7] ~= pguid then
+		if dse[args[3]] and E.db.DmgAtPlates.pttdt then
+			for frame in pairs(NP.VisiblePlates) do
 				if frame.guid == args[7] then
-					if dse[args[3]] then
-						DAN:DamageEvent(frame, args[11], args[13], args[12], args[19], args[10])
-					elseif  args[3] == "SWING_DAMAGE" then
-						DAN:DamageEvent(frame, AutoAttack, args[10], 1, args[19], 6603)
-					elseif mse[args[3]]  then
-						DAN:MissEvent(frame, args[11], args[13], args[10])
-					elseif args[3] == "SPELL_DISPEL" then
-						DAN:DispelEvent(frame, args[11], args[14], args[13])
-					elseif hse[args[3]] and E.db.DmgAtPlates.showtargethtt then
-						DAN:HealEvent(frame, args[11], args[13], args[16], args[10])
-					elseif csi[args[3]] then
-						DAN:SpellInterruptEvent(frame, args[11], args[10], args[14])
-					elseif args[3] == "SWING_MISSED" then
-						DAN:MissEvent(frame, AutoAttack, AutoAttack , 6603)
-					end
-					return
+					DAN:DamageEvent(frame, args[11], args[13], args[12], args[19], args[10])
 				end
-			elseif bit.band(args[6], BITMASK_PETS) > 0 and bit.band(args[6], COMBATLOG_OBJECT_AFFILIATION_MINE) > 0 and E.db.DmgAtPlates.showpetrdtt then -- pet/guard events
-				if pgui ~= args[4] then
-					if frame.guid == args[7] then
-						if dse[args[3]] then
-							DAN:DamageEvent(frame, args[11], args[13], "pet", args[19], args[10])
-						elseif args[3] == "SWING_DAMAGE" then
-							DAN:DamageEvent(frame, AutoAttackPet, args[10], "pet", args[19], 315235)
-						elseif mse[args[3]] then
-							DAN:MissEventPet(frame, args[11], args[13], args[10])
-						end
-					end
+			end
+		elseif  args[3] == "SWING_DAMAGE" and E.db.DmgAtPlates.pttdt  then
+			for frame in pairs(NP.VisiblePlates) do
+				if frame.guid == args[7] then
+					DAN:DamageEvent(frame, AutoAttack, args[10], 1, args[19], 6603)
+				end
+			end
+		elseif mse[args[3]] and E.db.DmgAtPlates.pttdt  then
+			for frame in pairs(NP.VisiblePlates) do
+				if frame.guid == args[7] then
+					DAN:MissEvent(frame, args[11], args[13], args[10])
+				end
+			end
+		elseif  args[3] == "SPELL_DISPEL" and E.db.DmgAtPlates.pttdt  then
+			for frame in pairs(NP.VisiblePlates) do
+				if frame.guid == args[7] then
+					DAN:DispelEvent(frame, args[11], args[14], args[13])
+				end
+			end
+		elseif hse[args[3]] and E.db.DmgAtPlates.pttht  then
+			for frame in pairs(NP.VisiblePlates) do
+				if frame.guid == args[7] then
+					DAN:HealEvent(frame, args[11], args[13], args[16], args[10])
+				end
+			end
+		elseif csi[args[3]] and E.db.DmgAtPlates.pttdt then
+			for frame in pairs(NP.VisiblePlates) do
+				if frame.guid == args[7] then
+					DAN:DamageEvent(frame, args[11], args[13], args[12], args[19], args[10])
+				end
+			end
+		elseif args[3] == "SWING_MISSED" and E.db.DmgAtPlates.pttdt then
+			for frame in pairs(NP.VisiblePlates) do
+				if frame.guid == args[7] then
+					DAN:MissEvent(frame, AutoAttack, AutoAttack , 6603)
+				end
+			end
+		end
+	elseif args[7] == pguid then
+		if dse[args[3]] and E.db.DmgAtPlates.ttpdt then
+			DAN:DamageEvent(ElvUI_PDF, args[11], args[13], args[12], args[19], args[10])
+		elseif  args[3] == "SWING_DAMAGE" and E.db.DmgAtPlates.ttpdt then
+			DAN:DamageEvent(ElvUI_PDF, AutoAttack, args[10], 1, args[19], 6603)
+		elseif mse[args[3]] and E.db.DmgAtPlates.ttpdt then
+			DAN:MissEvent(ElvUI_PDF, args[11], args[13], args[10])
+		elseif  args[3] == "SPELL_DISPEL" and E.db.DmgAtPlates.ttpdt then
+			DAN:DispelEvent(ElvUI_PDF, args[11], args[14], args[13])
+		elseif hse[args[3]] and E.db.DmgAtPlates.ttpht then
+			DAN:HealEvent(ElvUI_PDF, args[11], args[13], args[16], args[10])
+		elseif csi[args[3]]  and E.db.DmgAtPlates.ttpdt then
+			DAN:DamageEvent(ElvUI_PDF, args[11], args[13], args[12], args[19], args[10])
+		elseif args[3] == "SWING_MISSED" and E.db.DmgAtPlates.ttpdt then
+			DAN:MissEvent(ElvUI_PDF, AutoAttack, AutoAttack , 6603)
+		end
+	elseif bit.band(args[6], BITMASK_PETS) > 0 and bit.band(args[6], COMBATLOG_OBJECT_AFFILIATION_MINE) > 0 then -- pet/guard events
+		if dse[args[3]] and E.db.DmgAtPlates.petttdt  then
+			for frame in pairs(NP.VisiblePlates) do
+				if frame.guid == args[7] then
+					DAN:DamageEvent(frame, args[11], args[13], "pet", args[19], args[10])
+				end
+			end
+		elseif args[3] == "SWING_DAMAGE" and E.db.DmgAtPlates.petttdt then
+			for frame in pairs(NP.VisiblePlates) do
+				if frame.guid == args[7] then
+					DAN:DamageEvent(frame, AutoAttackPet, args[10], "pet", args[19], 315235)
+				end
+			end
+		elseif mse[args[3]] and E.db.DmgAtPlates.petttdt then
+			for frame in pairs(NP.VisiblePlates) do
+				if frame.guid == args[7] then
+					DAN:MissEventPet(frame, args[11], args[13], args[10])
+				end
+			end
+		elseif hse[args[3]] and E.db.DmgAtPlates.petttht then
+			for frame in pairs(NP.VisiblePlates) do
+				if frame.guid == args[7] then
+					DAN:HealEvent(ElvUI_PDF, args[11], args[13], args[16], args[10])
 				end
 			end
 		end
 	end
-end
-
-
-
-----------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------
--------------------------------------dapo
-----------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------
-
-function DAN:DmgAtPlatesOptions()
-	E.Options.args.DmgAtPlates = {
-		order = 55,
-		type = "group",
-		childGroups = "tab",
-		name = string.format("|cff1784d1%s|r", "DamageAtPlates"),
-		args = {
-			tabs = {
-				order = 1,
-				type = "group",
-				name = Loc["common"],
-				get = function(info)  return E.db.DmgAtPlates[info[#info]] end,
-				set = function(info, value)
-					E.db.DmgAtPlates[info[#info]] = value
-				end,
-				args = {
-					header = {
-						order = 1,
-						type = "header",
-						name = Loc["commondesc"]
-					},
-					onorof = {
-						order = 2,
-						type = "toggle",
-						name = Loc["onorof"],
-						desc = Loc["onorofdesc"],
-						get = function(info) return E.db.DmgAtPlates.onorof end,
-						set = function(info, value)
-							E.db.DmgAtPlates.onorof = value
-							if not E.db.DmgAtPlates.onorof then
-								DAN:OnDisable()
-							else
-								DAN:OnEnable()
-							end
-							-- if E.db.DmgAtPlates.onorof then
-							-- 	print("DA")
-							-- else
-							-- 	print("NET")
-							-- end
-						end
-					},
-					showtargetdt = {
-						order = 3,
-						type = "toggle",
-						name = Loc["showtargetdt"],
-						desc = Loc["showtargetdtdesc"],
-						get = function(info) return E.db.DmgAtPlates.showtargetdtt end,
-						set = function(info, value)
-							E.db.DmgAtPlates.showtargetdtt = value
-						end
-					},
-					showtargetht = {
-						order = 4,
-						type = "toggle",
-						name = Loc["showtargetht"],
-						desc = Loc["showtargethtdesc"],
-						get = function(info) return E.db.DmgAtPlates.showtargethtt end,
-						set = function(info, value)
-							E.db.DmgAtPlates.showtargethtt = value
-						end
-					},
-					showpetrdt = {
-						order = 5,
-						type = "toggle",
-						name = Loc["showpetrdt"],
-						desc = Loc["showpetrdtdesc"],
-						get = function(info) return E.db.DmgAtPlates.showpetrdtt end,
-						set = function(info, value)
-							E.db.DmgAtPlates.showpetrdtt = value
-						end
-					},
-					showplayerdt = {
-						order = 6,
-						type = "toggle",
-						name = Loc["showplayerdt"],
-						desc = Loc["showplayerdtdesc"],
-						get = function(info) return E.db.DmgAtPlates.showplayerdtt end,
-						set = function(info, value)
-							E.db.DmgAtPlates.showplayerdtt = value
-						end
-					},
-				},
-			},
-		}
-	}
 end
 
 function DAN:PLAYER_ENTERING_WORLD(...)
 	self:UnregisterEvent("PLAYER_ENTERING_WORLD")
 end
--- DAN.DmgTextFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
--- DAN.DmgTextFrame:SetScript("OnEvent",function(event,...)
--- 	ChckDmgEvnt(_,_,...)
--- end)
 
 function DAN:Initialize()
-	-- if not E.db.DmgAtPlates then
-		E.db.DmgAtPlates = E.db.DmgAtPlates or {}
-		E.db.DmgAtPlates.onorof = E.db.DmgAtPlates.onorof or false
-		E.db.DmgAtPlates.showtargetdtt = E.db.DmgAtPlates.showtargetdtt or false
-		E.db.DmgAtPlates.showtargethtt = E.db.DmgAtPlates.showtargethtt or false
-		E.db.DmgAtPlates.showpetrdtt = E.db.DmgAtPlates.showpetrdtt or false
-		E.db.DmgAtPlates.showplayerdtt = E.db.DmgAtPlates.showplayerdtt or false
+	E.db.DmgAtPlates = E.db.DmgAtPlates or {}
+	EP:RegisterPlugin("ElvUI_DmgAtPlates", self.DmgAtPlatesOptions)
 
-	-- end
-	EP:RegisterPlugin(addonName, self.DmgAtPlatesOptions)
 	self:RegisterEvent('PLAYER_ENTERING_WORLD')
-	-- if E.db.DmgAtPlates.onorof then
-		DAN.DmgTextFrame:SetScript("OnEvent",function(event,...)
-			DAN:ChckDmgEvnt(...)
-		end)
-	-- end
-	-- if not E.db.DmgAtPlates.onorof then
-		--NP:Unhook(NP,"OnUpdate")
-			-- DAN.DmgTextFrame:UnregisterEvent("OnEvent")
-	-- end
 
+	DAN.DmgTextFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+	DAN.DmgTextFrame:SetScript("OnEvent",function(event,...)
+		DAN:ChckDmgEvnt(...)
+	end)
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -827,20 +706,11 @@ end
 ----------------------------------------------------------------------------------------------------
 
 function DAN:OnEnable()
-	if E.db.DmgAtPlates.onorof then
-		DAN.DmgTextFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-		-- DAN.DmgTextFrame:SetScript("OnEvent",function(event,...)
-		-- 	DAN:ChckDmgEvnt(...)
-		-- end)
-	end
+	DAN.DmgTextFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 end
 
-
-
 function DAN:OnDisable()
-	if not E.db.DmgAtPlates.onorof then
-		DAN.DmgTextFrame:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-	end
+	DAN.DmgTextFrame:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 end
 
 
