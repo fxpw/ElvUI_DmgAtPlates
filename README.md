@@ -1,1 +1,1 @@
-## Show fly dmg text everywere 
+Показывает текст боя на плейтах
