@@ -123,11 +123,11 @@ local csi = {
 	SPELL_INTERRUPT = true
 }
 
-local cleu = "COMBAT_LOG_EVENT_UNFILTERED"
-local ptc = "PLAYER_TARGET_CHANGED"
-local pn = GetUnitName("player")
-local pguid = UnitGUID("player")
 
+local cleu
+local ptc
+local pn
+local pguid
 
 
 
@@ -685,18 +685,20 @@ end
 
 function DAN:PLAYER_ENTERING_WORLD(...)
 	self:UnregisterEvent("PLAYER_ENTERING_WORLD")
+	cleu = "COMBAT_LOG_EVENT_UNFILTERED"
+	ptc = "PLAYER_TARGET_CHANGED"
+	pn = GetUnitName("player")
+	pguid = UnitGUID("player")
+	DAN.DmgTextFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+	DAN.DmgTextFrame:SetScript("OnEvent",function(event,...)
+		DAN:ChckDmgEvnt(...)
+	end)
 end
 
 function DAN:Initialize()
 	E.db.DmgAtPlates = E.db.DmgAtPlates or {}
 	EP:RegisterPlugin("ElvUI_DmgAtPlates", self.DmgAtPlatesOptions)
-
 	self:RegisterEvent('PLAYER_ENTERING_WORLD')
-
-	DAN.DmgTextFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-	DAN.DmgTextFrame:SetScript("OnEvent",function(event,...)
-		DAN:ChckDmgEvnt(...)
-	end)
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -705,14 +707,21 @@ end
 ----------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------
 
-function DAN:OnEnable()
-	DAN.DmgTextFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-end
+
 
 function DAN:OnDisable()
-	DAN.DmgTextFrame:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+	if not E.db.DmgAtPlates.onorof then
+		DAN.DmgTextFrame:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+	end
 end
-
+function DAN:OnEnable()
+	if E.db.DmgAtPlates.onorof then
+		DAN.DmgTextFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+		DAN.DmgTextFrame:SetScript("OnEvent",function(event,...)
+			DAN:ChckDmgEvnt(...)
+		end)
+	end
+end
 
 
 E:RegisterModule(DAN:GetName())

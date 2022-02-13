@@ -42,8 +42,10 @@ function DAN:DmgAtPlatesOptions()
 						set = function(info, value)
 							E.db.DmgAtPlates.onorof = value
 							if not E.db.DmgAtPlates.onorof then
+								-- DAN.DmgTextFrame:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 								DAN:OnDisable()
 							else
+								-- DAN.DmgTextFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 								DAN:OnEnable()
 							end
 						end
