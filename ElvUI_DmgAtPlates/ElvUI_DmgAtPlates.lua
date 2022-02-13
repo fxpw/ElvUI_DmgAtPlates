@@ -5,6 +5,7 @@ local EP = E.Libs.EP
 local DAN = E:NewModule('ElvUI_DmgAtPlates', 'AceTimer-3.0', 'AceHook-3.0', 'AceEvent-3.0')
 local LibEasing = LibStub("LibEasing-1.0")
 local Loc = LibStub("AceLocale-3.0"):GetLocale("ElvUI_DmgAtPlates")
+local LSM = E.Libs.LSM
 
 -------------------------------------------------dmg text frame
 DAN.DmgTextFrame = CreateFrame("Frame", nil, UIParent)
@@ -26,8 +27,6 @@ local format, find = string.format, string.find
 local next, select, pairs, ipairs = next, select, pairs, ipairs
 local tinsert, tremove = table.insert, table.remove
 
-
-local defaultFont = "Friz Quadrata TT"
 
 local SMALL_HIT_EXPIRY_WINDOW = 30
 local SMALL_HIT_MULTIPIER = 0.5
@@ -92,6 +91,15 @@ local MISS_EVENT_STRINGS = {
 	["REFLECT"] = Loc["Reflected"],
 	["RESIST"] = Loc["Resisted"]
 }
+
+function DAN:rgbToHex(r, g, b)
+	return format("%02x%02x%02x", mtfl(255 * r), mtfl(255 * g), mtfl(255 * b))
+end
+
+function DAN:hexToRGB(hex)
+	return tonumber(hex:sub(1, 2), 16) / 255, tonumber(hex:sub(3, 4), 16) / 255, tonumber(hex:sub(5, 6), 16) / 255, 1
+end
+
 ------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------
 --------------------------------------------- lcls
@@ -138,13 +146,13 @@ local pguid
 ------------------------------------------------------------------------------------------
 
 local function getFontPath(fontName)
-	local fontPath = "Fonts\\FRIZQT__.TTF"
+	local fontPath = LSM:Fetch("font", fontName) or "Fonts\\FRIZQT__.TTF"
 	return fontPath
 end
 
 local fontStringCache = {}
 local frameCounter = 0
-local function getFontString(f)
+local function getFontString()
 	local fontString, fontStringFrame
 
 	if next(fontStringCache) then
@@ -157,8 +165,7 @@ local function getFontString(f)
 		fontString = fontStringFrame:CreateFontString()
 		fontString:SetParent(fontStringFrame)
 	end
-
-	fontString:SetFont(getFontPath(defaultFont), 15, "OUTLINE")
+	fontString:SetFont(getFontPath(E.db.DmgAtPlates.font),E.db.DmgAtPlates.fontSize,E.db.DmgAtPlates.fontOutline)
 	fontString:SetShadowOffset(0, 0)
 
 	fontString:SetAlpha(1)
@@ -167,13 +174,13 @@ local function getFontString(f)
 	fontString:Show()
 
 
-		if not fontString.icon then
-			fontString.icon = DAN.DmgTextFrame:CreateTexture(nil, "BACKGROUND")
-			fontString.icon:SetTexCoord(0.062, 0.938, 0.062, 0.938)
-		end
-		fontString.icon:SetAlpha(1)
-		fontString.icon:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark")
-		fontString.icon:Hide()
+	if not fontString.icon then
+		fontString.icon = DAN.DmgTextFrame:CreateTexture(nil, "BACKGROUND")
+		fontString.icon:SetTexCoord(0.062, 0.938, 0.062, 0.938)
+	end
+	fontString.icon:SetAlpha(1)
+	fontString.icon:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark")
+	fontString.icon:Hide()
 
 		-- if fontString.icon.button then
 		-- 	fontString.icon.button:Show()
@@ -218,9 +225,9 @@ local function recycleFontString(fontString)
 
 	end
 
-	fontString:SetFont(getFontPath(defaultFont), 15, "OUTLINE")
+	fontString:SetFont(getFontPath(E.db.DmgAtPlates.font),E.db.DmgAtPlates.fontSize,E.db.DmgAtPlates.fontOutline)
 
-		fontString:SetShadowOffset(0, 0)
+	fontString:SetShadowOffset(0, 0)
 
 	fontString:ClearAllPoints()
 
@@ -305,7 +312,7 @@ local function AnimationOnUpdate()
 					else
 						fontString.pow = nil
 						fontString:SetTextHeight(height)
-						fontString:SetFont(getFontPath(defaultFont),fontString.DANFontSize,"OUTLINE")
+						fontString:SetFont(E.db.DmgAtPlates.font,E.db.DmgAtPlates.fontSize,E.db.DmgAtPlates.fontOutline)
 						fontString:SetShadowOffset(0, 0)
 						fontString:SetText(fontString.DANText)
 					end
@@ -379,13 +386,13 @@ function DAN:DisplayText(f, text, size, alpha, animation, spellId, pow, spellNam
 	local fontString
 	local icon
 
-	fontString = getFontString(f)
+	fontString = getFontString()
 
 	fontString.DANText = text
 	fontString:SetText(fontString.DANText)
 
 	fontString.DANFontSize = size
-	fontString:SetFont(getFontPath(defaultFont), fontString.DANFontSize, "OUTLINE")
+	fontString:SetFont(getFontPath(E.db.DmgAtPlates.font),size,E.db.DmgAtPlates.fontOutline)
 
 	fontString:SetShadowOffset(0, 0)
 
@@ -402,7 +409,7 @@ function DAN:DisplayText(f, text, size, alpha, animation, spellId, pow, spellNam
 		texture = select(3, GetSpellInfo(spellName))
 	end
 
-	if texture then
+	if texture and E.db.DmgAtPlates.showIcon then
 		icon = fontString.icon
 		icon:Show()
 		icon:SetTexture(texture)
@@ -430,31 +437,31 @@ local runningAverageDamageEvents = 0
 function DAN:DamageEvent(f, spellName, amount, school, crit, spellId)
 	local text, animation, pow, size, alpha
 	----- определение чего то спеллнейма
-  local autoattack = spellName == AutoAttack or spellName == AutoShot or spellName == "pet"
+  	local autoattack = spellName == AutoAttack or spellName == AutoShot or spellName == "pet"
 	--------- animation
 	if (autoattack and crit) then
 		-- animation = "verticalUp"
-		animation = "verticalUp"
+		animation = E.db.DmgAtPlates.tttckndcrt or "verticalUp"
 		-- print(animation..568)
 		pow = true
 	elseif (autoattack) then
-		animation = "fountain"
+		animation =  E.db.DmgAtPlates.tttck or "fountain"
 		-- print(animation..590)
 		pow = false
 	elseif (crit) then
-		animation = "fountain"
+		animation = E.db.DmgAtPlates.crt or "fountain"
 		-- animation = "verticalUp"
 		-- print(animation..594)
 		pow = true
 	elseif (not autoattack and not crit) then
 		-- animation = "rainfall"
-		animation = "fountain"
+		animation = E.db.DmgAtPlates.ntttckndcrt or "fountain"
 		-- print(animation..598)
 		pow = false
 	end
 	------ формат текста
-	text = format("%.1f", amount / 1000)
-	text = text .. "k"
+	text = format("%.1fk", amount / 1000)
+
 	------------------- красим текст в школу
 	if	(spellName == AutoAttack or spellName == AutoShot) and DAMAGE_TYPE_COLORS[spellName] then
 			text = "\124cff" .. DAMAGE_TYPE_COLORS[spellName] .. text .. "\124r"
@@ -464,30 +471,72 @@ function DAN:DamageEvent(f, spellName, amount, school, crit, spellId)
 		text = "\124cff" .. "ffff00" .. text .. "\124r"
 	end
 
-	size = 20
-	alpha = 1
-	--   local size = 20
-	--   local alpha = 1
-	--   local animation = "fountain"
-	--   local pow = false
-	--------------считает последние штуки
-  runningAverageDamageEvents = ((runningAverageDamageEvents * numDamageEvents) + amount) / (numDamageEvents + 1)
-  numDamageEvents = numDamageEvents + 1
-  lastDamageEventTime = GetTime()
-  -- print(plate, text, size, alpha, animation, spellId, pow, spellName)
---   print(517)
+	local isTarget = (UnitGUID("target") == f.guid)
+
+	if (E.db.DmgAtPlates.sfftrgt and not isTarget and pguid ~= f.guid) then
+		size = E.db.DmgAtPlates.sfftrgtSize
+		alpha = E.db.DmgAtPlates.sfftrgtAlpha
+		-- print(473)
+	else
+		size = E.db.DmgAtPlates.fontSize or 20
+		alpha = E.db.DmgAtPlates.fontAlpha or 1
+	end
+	--------------small hits
+	if (E.db.DmgAtPlates.smallHits or E.db.DmgAtPlates.smallHitsHide) then
+		if (not lastDamageEventTime or (lastDamageEventTime + SMALL_HIT_EXPIRY_WINDOW < GetTime())) then
+			numDamageEvents = 0
+			runningAverageDamageEvents = 0
+		end
+		runningAverageDamageEvents = ((runningAverageDamageEvents * numDamageEvents) + amount) / (numDamageEvents + 1)
+		numDamageEvents = numDamageEvents + 1
+		lastDamageEventTime = GetTime()
+		if ((not crit and amount < SMALL_HIT_MULTIPIER * runningAverageDamageEvents) or (crit and amount / 2 < SMALL_HIT_MULTIPIER * runningAverageDamageEvents)) then
+			if (E.db.DmgAtPlates.smallHitsHide) then
+				return
+			else
+				size = size * E.db.DmgAtPlates.smallHitsScale
+			end
+		end
+	end
+	------for debug
+	if (size < 5) then
+		size = 5
+	end
+
 	DAN:DisplayText(f, text, size, alpha, animation, spellId, pow, spellName)
+end
+
+function DAN:HealEvent(f, spllname, slldmg, healcrt, splld)
+	local text, animation, pow, size, alpha, color
+	----------------------- animation
+	if healcrt then
+		animation = E.db.DmgAtPlates.hcrt or "verticalUp"
+	else
+		animation =  E.db.DmgAtPlates.nhcrt or "fountain"
+	end
+	------------color
+	color = E.db.DmgAtPlates.hlclr or "ffff00"
+	----------------- size
+	size = E.db.DmgAtPlates.fontSize or 20
+	---------------- alpha
+	alpha = 1
+	pow = false
+	------------- text
+	text = format("%.1fk", slldmg / 1000)
+
+	text = "\124cff" .. color .. text .. "\124r"
+
+	self:DisplayText(f, text, size, alpha, animation, splld, pow, spllname)
 end
 
 function DAN:MissEvent(f, spellName, missType, spellId)
 	local text, animation, pow, size, alpha, color
-	-- local isTarget = (UnitGUID("target") == guid)
 	----------------------- animation
 	animation = "verticalDown"
 	------------color
 	color = "ffff00"
 	----------------- size
-	size = 20
+	size = E.db.DmgAtPlates.fontSize or 20
 	---------------- alpha
 	alpha = 1
 	pow = true
@@ -499,13 +548,12 @@ function DAN:MissEvent(f, spellName, missType, spellId)
 end
 function DAN:MissEventPet(f, spellName, missType, spellId)
 	local text, animation, pow, size, alpha, color
-	-- local isTarget = (UnitGUID("target") == guid)
 	----------------------- animation
 	animation = "verticalDown"
 	------------color
 	color = "ffff00"
 	----------------- size
-	size = 20
+	size = E.db.DmgAtPlates.fontSize or 20
 	---------------- alpha
 	alpha = 1
 	pow = true
@@ -518,13 +566,12 @@ end
 
 function DAN:DispelEvent(f, spellName, infodis, spellId)
 	local text, animation, pow, size, alpha, color
-	-- local isTarget = (UnitGUID("target") == guid)
 	----------------------- animation
 	animation = "fountain"
 	------------color
 	color = "ffff00"
 	----------------- size
-	size = 20
+	size = E.db.DmgAtPlates.fontSize or 20
 	---------------- alpha
 	alpha = 1
 	pow = false
@@ -535,39 +582,17 @@ function DAN:DispelEvent(f, spellName, infodis, spellId)
 	self:DisplayText(f, text, size, alpha, animation, spellId, pow, spellName)
 end
 
-function DAN:HealEvent(f, spllname, slldmg, healcrt, splld)
-	local text, animation, pow, size, alpha, color
-	-- local isTarget = (UnitGUID("target") == guid)
-	----------------------- animation
-	if healcrt then
-		animation = "verticalUp"
-	else
-		animation = "fountain"
-	end
-	------------color
-	color = "ffff00"
-	----------------- size
-	size = 20
-	---------------- alpha
-	alpha = 1
-	pow = false
-	------------- text
-	text = format("%.1f", slldmg / 1000)
-	text = text .. "k"
-	text = "\124cff" .. color .. text .. "\124r"
 
-	self:DisplayText(f, text, size, alpha, animation, splld, pow, spllname)
-end
 
 function DAN:SpellInterruptEvent(f,  spllname, splld, intrspll)
 	local text, animation, pow, size, alpha, color
-	-- local isTarget = (UnitGUID("target") == guid)
+	-- print(spllname, splld, intrspll)
 	----------------------- animation
 	animation = "verticalUp"
 	------------color
 	color = "ffff00"
 	----------------- size
-	size = 20
+	size = E.db.DmgAtPlates.fontSize or 20
 	---------------- alpha
 	alpha = 1
 	pow = true
@@ -628,7 +653,7 @@ function DAN:ChckDmgEvnt(...)
 		elseif csi[args[3]] and E.db.DmgAtPlates.pttdt then
 			for frame in pairs(NP.VisiblePlates) do
 				if frame.guid == args[7] then
-					DAN:DamageEvent(frame, args[11], args[13], args[12], args[19], args[10])
+					DAN:SpellInterruptEvent(frame, args[11],args[10],args[14])
 				end
 			end
 		elseif args[3] == "SWING_MISSED" and E.db.DmgAtPlates.pttdt then
@@ -650,7 +675,7 @@ function DAN:ChckDmgEvnt(...)
 		elseif hse[args[3]] and E.db.DmgAtPlates.ttpht then
 			DAN:HealEvent(ElvUI_PDF, args[11], args[13], args[16], args[10])
 		elseif csi[args[3]]  and E.db.DmgAtPlates.ttpdt then
-			DAN:DamageEvent(ElvUI_PDF, args[11], args[13], args[12], args[19], args[10])
+			DAN:SpellInterruptEvent(frame, args[11],args[10],args[14])
 		elseif args[3] == "SWING_MISSED" and E.db.DmgAtPlates.ttpdt then
 			DAN:MissEvent(ElvUI_PDF, AutoAttack, AutoAttack , 6603)
 		end
@@ -676,7 +701,7 @@ function DAN:ChckDmgEvnt(...)
 		elseif hse[args[3]] and E.db.DmgAtPlates.petttht then
 			for frame in pairs(NP.VisiblePlates) do
 				if frame.guid == args[7] then
-					DAN:HealEvent(ElvUI_PDF, args[11], args[13], args[16], args[10])
+					DAN:HealEvent(frame, args[11], args[13], args[16], args[10])
 				end
 			end
 		end
@@ -697,6 +722,7 @@ end
 
 function DAN:Initialize()
 	E.db.DmgAtPlates = E.db.DmgAtPlates or {}
+	E.db.DmgAtPlates.hlclr = E.db.DmgAtPlates.hlclr or "ffff00"
 	EP:RegisterPlugin("ElvUI_DmgAtPlates", self.DmgAtPlatesOptions)
 	self:RegisterEvent('PLAYER_ENTERING_WORLD')
 end
