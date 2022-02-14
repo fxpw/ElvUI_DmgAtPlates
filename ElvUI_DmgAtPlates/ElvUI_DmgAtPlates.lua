@@ -145,14 +145,14 @@ local pguid
 ------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------
 
-local function getFontPath(fontName)
+function DAN:GFP(fontName)
 	local fontPath = LSM:Fetch("font", fontName) or "Fonts\\FRIZQT__.TTF"
 	return fontPath
 end
 
 local fontStringCache = {}
 local frameCounter = 0
-local function getFontString()
+function DAN:GFS()
 	local fontString, fontStringFrame
 
 	if next(fontStringCache) then
@@ -165,7 +165,7 @@ local function getFontString()
 		fontString = fontStringFrame:CreateFontString()
 		fontString:SetParent(fontStringFrame)
 	end
-	fontString:SetFont(getFontPath(E.db.DmgAtPlates.font),E.db.DmgAtPlates.fontSize,E.db.DmgAtPlates.fontOutline)
+	fontString:SetFont(DAN:GFP(E.db.DmgAtPlates.font),E.db.DmgAtPlates.fontSize,E.db.DmgAtPlates.fontOutline)
 	fontString:SetShadowOffset(0, 0)
 
 	fontString:SetAlpha(1)
@@ -189,7 +189,7 @@ local function getFontString()
 	return fontString
 end
 
-local function recycleFontString(fontString)
+function DAN:RFS(fontString)
 	fontString:SetAlpha(0)
 	fontString:Hide()
 
@@ -225,7 +225,7 @@ local function recycleFontString(fontString)
 
 	end
 
-	fontString:SetFont(getFontPath(E.db.DmgAtPlates.font),E.db.DmgAtPlates.fontSize,E.db.DmgAtPlates.fontOutline)
+	fontString:SetFont(DAN:GFP(E.db.DmgAtPlates.font),E.db.DmgAtPlates.fontSize,E.db.DmgAtPlates.fontOutline)
 
 	fontString:SetShadowOffset(0, 0)
 
@@ -284,7 +284,7 @@ local function AnimationOnUpdate()
 		for fontString, _ in pairs(animating) do
 			local elapsed = GetTime() - fontString.animatingStartTime
 			if elapsed > fontString.animatingDuration then
-				recycleFontString(fontString)
+				DAN:RFS(fontString)
 			else
 				local isTarget = false
 
@@ -334,7 +334,7 @@ local function AnimationOnUpdate()
 				if fontString.anchorFrame and fontString.anchorFrame:IsShown() then
 					fontString:SetPoint("CENTER", fontString.anchorFrame, "CENTER", 0 + xOffset, 0 + yOffset)
 				else
-					recycleFontString(fontString)
+					DAN:RFS(fontString)
 				end
 			end
 		end
@@ -386,13 +386,13 @@ function DAN:DisplayText(f, text, size, alpha, animation, spellId, pow, spellNam
 	local fontString
 	local icon
 
-	fontString = getFontString()
+	fontString = DAN:GFS()
 
 	fontString.DANText = text
 	fontString:SetText(fontString.DANText)
 
 	fontString.DANFontSize = size
-	fontString:SetFont(getFontPath(E.db.DmgAtPlates.font),size,E.db.DmgAtPlates.fontOutline)
+	fontString:SetFont(DAN:GFP(E.db.DmgAtPlates.font),size,E.db.DmgAtPlates.fontOutline)
 
 	fontString:SetShadowOffset(0, 0)
 
@@ -461,7 +461,7 @@ function DAN:DamageEvent(f, spellName, amount, school, crit, spellId)
 	end
 	------ формат текста
 	text = format("%.1fk", amount / 1000)
-
+	-- text = text .. "k"
 	------------------- красим текст в школу
 	if	(spellName == AutoAttack or spellName == AutoShot) and DAMAGE_TYPE_COLORS[spellName] then
 			text = "\124cff" .. DAMAGE_TYPE_COLORS[spellName] .. text .. "\124r"
@@ -474,8 +474,8 @@ function DAN:DamageEvent(f, spellName, amount, school, crit, spellId)
 	local isTarget = (UnitGUID("target") == f.guid)
 
 	if (E.db.DmgAtPlates.sfftrgt and not isTarget and pguid ~= f.guid) then
-		size = E.db.DmgAtPlates.sfftrgtSize
-		alpha = E.db.DmgAtPlates.sfftrgtAlpha
+		size = E.db.DmgAtPlates.sfftrgtSize or 20
+		alpha = E.db.DmgAtPlates.sfftrgtAlpha or 1
 		-- print(473)
 	else
 		size = E.db.DmgAtPlates.fontSize or 20
@@ -494,7 +494,7 @@ function DAN:DamageEvent(f, spellName, amount, school, crit, spellId)
 			if (E.db.DmgAtPlates.smallHitsHide) then
 				return
 			else
-				size = size * E.db.DmgAtPlates.smallHitsScale
+				size = size * (E.db.DmgAtPlates.smallHitsScale or 1)
 			end
 		end
 	end
@@ -522,8 +522,8 @@ function DAN:HealEvent(f, spllname, slldmg, healcrt, splld)
 	alpha = 1
 	pow = false
 	------------- text
-	text = format("%.1fk", slldmg / 1000)
-
+	text = format("%.1f", slldmg / 1000)
+	text = text .. "k"
 	text = "\124cff" .. color .. text .. "\124r"
 
 	self:DisplayText(f, text, size, alpha, animation, splld, pow, spllname)
@@ -723,6 +723,7 @@ end
 function DAN:Initialize()
 	E.db.DmgAtPlates = E.db.DmgAtPlates or {}
 	E.db.DmgAtPlates.hlclr = E.db.DmgAtPlates.hlclr or "ffff00"
+	E.db.DmgAtPlates.onorof = E.db.DmgAtPlates.onorof or false
 	EP:RegisterPlugin("ElvUI_DmgAtPlates", self.DmgAtPlatesOptions)
 	self:RegisterEvent('PLAYER_ENTERING_WORLD')
 end
