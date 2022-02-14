@@ -10,10 +10,10 @@ local LSM = E.Libs.LSM
 -------------------------------------------------dmg text frame
 DAN.DmgTextFrame = CreateFrame("Frame", nil, UIParent)
 -------------------------------------------------player events frame
-local ElvUI_PDFrame = CreateFrame("Frame","ElvUI_PDF",UIParent)
-ElvUI_PDFrame:SetPoint("CENTER",UIParent,"CENTER",0,-100)
-ElvUI_PDFrame:SetSize(32,32)
-ElvUI_PDFrame:Show()
+DAN.ElvUI_PDFrame = CreateFrame("Frame","ElvUI_PDF",UIParent)
+DAN.ElvUI_PDFrame:SetPoint("CENTER",UIParent,"CENTER",0,-100)
+DAN.ElvUI_PDFrame:SetSize(32,32)
+DAN.ElvUI_PDFrame:Show()
 ------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------
 -------------------------------------DmgAtNameplates all functions and const
@@ -506,7 +506,7 @@ function DAN:DamageEvent(f, spellName, amount, school, crit, spellId)
 	DAN:DisplayText(f, text, size, alpha, animation, spellId, pow, spellName)
 end
 
-function DAN:HealEvent(f, spllname, slldmg, healcrt, splld)
+function DAN:HealEvent(f, spllname, slldmg, healcrt, splld, vrhll)
 	local text, animation, pow, size, alpha, color
 	----------------------- animation
 	if healcrt then
@@ -522,10 +522,14 @@ function DAN:HealEvent(f, spllname, slldmg, healcrt, splld)
 	alpha = 1
 	pow = false
 	------------- text
-	text = format("%.1f", slldmg / 1000)
-	text = text .. "k"
+	if E.db.DmgAtPlates.shwrhll and slldmg == vrhll then
+		text = format("Перелечено: %.1f k", (vrhll  / 1000))
+	elseif not E.db.DmgAtPlates.shwrhll and slldmg == vrhll then
+		return
+	else
+		text = format("%.1fk", ((slldmg - vrhll)  / 1000))
+	end
 	text = "\124cff" .. color .. text .. "\124r"
-
 	self:DisplayText(f, text, size, alpha, animation, splld, pow, spllname)
 end
 
@@ -616,9 +620,9 @@ function DAN:ChckDmgEvnt(...)
 	-- print("rab")
 	-- local vnt1,tm2,sbvnt3,guidwhcst4,whcst5,flags6,tgtguid7,tgtcst8,_,splld10,spllname11,schl12,slldmg13,infodis14,intrspll15,healcrt16,_,_,crt19,_,_,_,_,_,_,_ = ...
 	local args = {...}
-	-- for k,v in pairs(args) do
-	-- 	print(k,v)
-	-- end
+	for k,v in pairs(args) do
+		print(k,v)
+	end
 	if args[4] == pguid and args[7] ~= pguid then
 		if dse[args[3]] and E.db.DmgAtPlates.pttdt then
 			for frame in pairs(NP.VisiblePlates) do
@@ -647,7 +651,7 @@ function DAN:ChckDmgEvnt(...)
 		elseif hse[args[3]] and E.db.DmgAtPlates.pttht  then
 			for frame in pairs(NP.VisiblePlates) do
 				if frame.guid == args[7] then
-					DAN:HealEvent(frame, args[11], args[13], args[16], args[10])
+					DAN:HealEvent(frame, args[11], args[13], args[16], args[10],args[14])
 				end
 			end
 		elseif csi[args[3]] and E.db.DmgAtPlates.pttdt then
@@ -673,7 +677,7 @@ function DAN:ChckDmgEvnt(...)
 		elseif  args[3] == "SPELL_DISPEL" and E.db.DmgAtPlates.ttpdt then
 			DAN:DispelEvent(ElvUI_PDF, args[11], args[14], args[13])
 		elseif hse[args[3]] and E.db.DmgAtPlates.ttpht then
-			DAN:HealEvent(ElvUI_PDF, args[11], args[13], args[16], args[10])
+			DAN:HealEvent(ElvUI_PDF, args[11], args[13], args[16], args[10],args[14])
 		elseif csi[args[3]]  and E.db.DmgAtPlates.ttpdt then
 			DAN:SpellInterruptEvent(frame, args[11],args[10],args[14])
 		elseif args[3] == "SWING_MISSED" and E.db.DmgAtPlates.ttpdt then
@@ -701,7 +705,7 @@ function DAN:ChckDmgEvnt(...)
 		elseif hse[args[3]] and E.db.DmgAtPlates.petttht then
 			for frame in pairs(NP.VisiblePlates) do
 				if frame.guid == args[7] then
-					DAN:HealEvent(frame, args[11], args[13], args[16], args[10])
+					DAN:HealEvent(frame, args[11], args[13], args[16], args[10],args[14])
 				end
 			end
 		end

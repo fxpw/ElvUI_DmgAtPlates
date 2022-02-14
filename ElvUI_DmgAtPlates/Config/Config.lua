@@ -371,13 +371,23 @@ function DAN:DmgAtPlatesOptions()
 							E.db.DmgAtPlates.petttht = value
 						end
 					},
-					header2 = {
+					shwrhll = {
 						order = 5,
+						type = "toggle",
+						name = Loc["shwrhll"],
+						desc = Loc["shwrhlldesc"],
+						get = function(info) return E.db.DmgAtPlates.shwrhll end,
+						set = function(info, value)
+							E.db.DmgAtPlates.shwrhll = value
+						end
+					},
+					header2 = {
+						order = 6,
 						type = "header",
 						name = Loc["AnimationHeal"]
 					},
 					hcrt = {
-						order = 6,
+						order = 7,
 						type = "select",
 						name = Loc["crt"],
 						desc = Loc["crt"],
@@ -388,7 +398,7 @@ function DAN:DmgAtPlatesOptions()
 						end
 					},
 					nhcrt = {
-						order = 7,
+						order = 8,
 						type = "select",
 						name = Loc["nhcrt"],
 						desc = Loc["nhcrt"],
@@ -399,7 +409,7 @@ function DAN:DmgAtPlatesOptions()
 						end
 					},
 					hlclr = {
-						order = 8,
+						order = 9,
 						type = "color",
 						name = Loc["healColor"],
 						desc = "",

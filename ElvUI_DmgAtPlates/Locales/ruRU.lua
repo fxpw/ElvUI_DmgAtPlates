@@ -37,6 +37,8 @@ Loc["ntttckndcrt"] = "Обычный урон"
 Loc["nhcrt"] = "Обычное исцеление"
 Loc["AnimationHeal"] = "Анимация исцеления"
 Loc["healColor"] = "Цвет текста исцеления"
+Loc["shwrhll"] ="Показывать оверхил"
+Loc["shwrhlldesc"] ="Показывать оверхил?"
 
 Loc["Vertical Up"] = "Поднятие вверх"
 Loc["Vertical Down"] = "Опускается вниз"
