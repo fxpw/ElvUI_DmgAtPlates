@@ -620,9 +620,9 @@ function DAN:ChckDmgEvnt(...)
 	-- print("rab")
 	-- local vnt1,tm2,sbvnt3,guidwhcst4,whcst5,flags6,tgtguid7,tgtcst8,_,splld10,spllname11,schl12,slldmg13,infodis14,intrspll15,healcrt16,_,_,crt19,_,_,_,_,_,_,_ = ...
 	local args = {...}
-	for k,v in pairs(args) do
-		print(k,v)
-	end
+	-- for k,v in pairs(args) do
+	-- 	print(k,v)
+	-- end
 	if args[4] == pguid and args[7] ~= pguid then
 		if dse[args[3]] and E.db.DmgAtPlates.pttdt then
 			for frame in pairs(NP.VisiblePlates) do
