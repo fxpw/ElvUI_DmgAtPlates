@@ -99,6 +99,12 @@ end
 function DAN:hexToRGB(hex)
 	return tonumber(hex:sub(1, 2), 16) / 255, tonumber(hex:sub(3, 4), 16) / 255, tonumber(hex:sub(5, 6), 16) / 255, 1
 end
+function DAN:CSEP(number)
+	-- https://stackoverflow.com/questions/10989788/lua-format-integer
+	local _, _, minus, int, fraction = tostring(number):find('([-]?)(%d+)([.]?%d*)');
+	int = int:reverse():gsub("(%d%d%d)", "%1,");
+	return minus..int:reverse():gsub("^,", "")..fraction;
+end
 
 ------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------
@@ -460,7 +466,13 @@ function DAN:DamageEvent(f, spellName, amount, school, crit, spellId)
 		pow = false
 	end
 	------ формат текста
-	text = format("%.1fk", amount / 1000)
+	if E.db.DmgAtPlates.textFormat == "kk" then
+		text = format("%.1fk", amount / 1000)
+	elseif E.db.DmgAtPlates.textFormat == "csep" then
+		text = DAN:CSEP(amount)
+	elseif E.db.DmgAtPlates.textFormat == "none" then
+		text = amount
+	end
 	-- text = text .. "k"
 	------------------- красим текст в школу
 	if	(spellName == AutoAttack or spellName == AutoShot) and DAMAGE_TYPE_COLORS[spellName] then
@@ -515,7 +527,7 @@ function DAN:HealEvent(f, spllname, slldmg, healcrt, splld, vrhll)
 		animation =  E.db.DmgAtPlates.nhcrt or "fountain"
 	end
 	------------color
-	color = E.db.DmgAtPlates.hlclr or "ffff00"
+	color = E.db.DmgAtPlates.hlclr
 	----------------- size
 	size = E.db.DmgAtPlates.fontSize or 20
 	---------------- alpha
@@ -523,11 +535,23 @@ function DAN:HealEvent(f, spllname, slldmg, healcrt, splld, vrhll)
 	pow = false
 	------------- text
 	if E.db.DmgAtPlates.shwrhll and slldmg == vrhll then
-		text = format("Перелечено: %.1f k", (vrhll  / 1000))
+		if E.db.DmgAtPlates.textFormat == "kk" then
+			text = format("Перелечено: %.1fk", ( vrhll/ 1000))
+		elseif E.db.DmgAtPlates.textFormat == "csep" then
+			text = "Перелечено: "..DAN:CSEP((vrhll))
+		elseif E.db.DmgAtPlates.textFormat == "none" then
+			text = "Перелечено: "..vrhll --------------------- for another thing
+		end
 	elseif not E.db.DmgAtPlates.shwrhll and slldmg == vrhll then
 		return
-	else
-		text = format("%.1fk", ((slldmg - vrhll)  / 1000))
+	elseif E.db.DmgAtPlates.shwrhll and slldmg ~= vrhll then
+		if E.db.DmgAtPlates.textFormat == "kk" then
+			text = format("%.1fk", ((slldmg) / 1000))
+		elseif E.db.DmgAtPlates.textFormat == "csep" then
+			text = DAN:CSEP((slldmg))
+		elseif E.db.DmgAtPlates.textFormat == "none" then
+			text = slldmg --------------------- for another thing
+		end
 	end
 	text = "\124cff" .. color .. text .. "\124r"
 	self:DisplayText(f, text, size, alpha, animation, splld, pow, spllname)
@@ -714,6 +738,7 @@ end
 
 function DAN:PLAYER_ENTERING_WORLD(...)
 	self:UnregisterEvent("PLAYER_ENTERING_WORLD")
+	DAN:LoadCmmnOptions()
 	cleu = "COMBAT_LOG_EVENT_UNFILTERED"
 	ptc = "PLAYER_TARGET_CHANGED"
 	pn = GetUnitName("player")
@@ -722,12 +747,10 @@ function DAN:PLAYER_ENTERING_WORLD(...)
 	DAN.DmgTextFrame:SetScript("OnEvent",function(event,...)
 		DAN:ChckDmgEvnt(...)
 	end)
+	
 end
 
 function DAN:Initialize()
-	E.db.DmgAtPlates = E.db.DmgAtPlates or {}
-	E.db.DmgAtPlates.hlclr = E.db.DmgAtPlates.hlclr or "ffff00"
-	E.db.DmgAtPlates.onorof = E.db.DmgAtPlates.onorof or false
 	EP:RegisterPlugin("ElvUI_DmgAtPlates", self.DmgAtPlatesOptions)
 	self:RegisterEvent('PLAYER_ENTERING_WORLD')
 end
@@ -741,17 +764,17 @@ end
 
 
 function DAN:OnDisable()
-	if not E.db.DmgAtPlates.onorof then
+	-- if not E.db.DmgAtPlates.onorof then
 		DAN.DmgTextFrame:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-	end
+	-- end
 end
 function DAN:OnEnable()
-	if E.db.DmgAtPlates.onorof then
+	-- if E.db.DmgAtPlates.onorof then
 		DAN.DmgTextFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 		DAN.DmgTextFrame:SetScript("OnEvent",function(event,...)
 			DAN:ChckDmgEvnt(...)
 		end)
-	end
+	-- end
 end
 
 

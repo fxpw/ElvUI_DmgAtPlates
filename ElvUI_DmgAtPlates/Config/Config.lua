@@ -4,6 +4,45 @@ local DAN = E:GetModule("ElvUI_DmgAtPlates")
 
 local Loc = LibStub("AceLocale-3.0"):GetLocale("ElvUI_DmgAtPlates")
 
+----------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------
+------------------------------------- common par
+----------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------
+
+function DAN:LoadCmmnOptions()
+	E.db.DmgAtPlates = E.db.DmgAtPlates or {}
+	E.db.DmgAtPlates.onorof = E.db.DmgAtPlates.onorof or false
+	E.db.DmgAtPlates.showIcon = E.db.DmgAtPlates.showIcon or false
+	E.db.DmgAtPlates.font = E.db.DmgAtPlates.font or "PT Sans Narrow"
+	E.db.DmgAtPlates.fontSize = E.db.DmgAtPlates.fontSize or 20
+	E.db.DmgAtPlates.fontAlpha = E.db.DmgAtPlates.fontAlpha or 1
+	E.db.DmgAtPlates.fontOutline = E.db.DmgAtPlates.fontOutline or "OUTLINE"
+	E.db.DmgAtPlates.sfftrgt = E.db.DmgAtPlates.sfftrgt or false
+	E.db.DmgAtPlates.sfftrgtSize = E.db.DmgAtPlates.sfftrgtSize or 20
+	E.db.DmgAtPlates.sfftrgtAlpha = E.db.DmgAtPlates.sfftrgtAlpha or 1
+	E.db.DmgAtPlates.smallHits = E.db.DmgAtPlates.smallHits or false
+	E.db.DmgAtPlates.smallHitsScale = E.db.DmgAtPlates.smallHitsScale or 1
+	E.db.DmgAtPlates.smallHitsHide = E.db.DmgAtPlates.smallHitsHide or false
+	E.db.DmgAtPlates.textFormat = E.db.DmgAtPlates.textFormat or "none"
+	E.db.DmgAtPlates.pttdt = E.db.DmgAtPlates.pttdt or false
+	E.db.DmgAtPlates.ttpdt = E.db.DmgAtPlates.ttpdt or false
+	E.db.DmgAtPlates.petttdt = E.db.DmgAtPlates.petttdt or false
+	E.db.DmgAtPlates.tttckndcrt = E.db.DmgAtPlates.tttckndcrt or "verticalUp"
+	E.db.DmgAtPlates.tttck = E.db.DmgAtPlates.tttck or "verticalUp"
+	E.db.DmgAtPlates.crt = E.db.DmgAtPlates.crt or "verticalUp"
+	E.db.DmgAtPlates.ntttckndcrt = E.db.DmgAtPlates.ntttckndcrt or "verticalUp"
+	E.db.DmgAtPlates.pttht = E.db.DmgAtPlates.pttht or false
+	E.db.DmgAtPlates.ttpht = E.db.DmgAtPlates.ttpht or false
+	E.db.DmgAtPlates.petttht = E.db.DmgAtPlates.petttht or false
+	E.db.DmgAtPlates.shwrhll = E.db.DmgAtPlates.shwrhll or false
+	E.db.DmgAtPlates.hcrt = E.db.DmgAtPlates.hcrt or "verticalUp"
+	E.db.DmgAtPlates.nhcrt = E.db.DmgAtPlates.onorof or "verticalUp"
+	E.db.DmgAtPlates.hlclr = E.db.DmgAtPlates.hlclr or "ffff00"
+
+end
 
 
 ----------------------------------------------------------------------------------------------------
@@ -229,7 +268,23 @@ function DAN:DmgAtPlatesOptions()
 						set = function(_, newValue)
 							E.db.DmgAtPlates.smallHitsHide = newValue
 						end,
-					}
+					},
+					textFormat = {
+						order = 18,
+						type = "select",
+						name = Loc["textformat"],
+						values = {
+							["none"] = Loc["none"],
+							["csep"] = Loc["csep"],
+							["kk"] = Loc["kk"],
+						},
+						get = function()
+							return E.db.DmgAtPlates.textFormat
+						end,
+						set = function(_, newValue)
+							E.db.DmgAtPlates.textFormat = newValue
+						end
+					},
 				},
 			},
             pttdttab = {
