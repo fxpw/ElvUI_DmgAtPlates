@@ -466,7 +466,7 @@ function DAN:DamageEvent(f, spellName, amount, school, crit, spellId)
 		pow = false
 	end
 	------ формат текста
-	if E.db.DmgAtPlates.textFormat == "kk" then
+	if E.db.DmgAtPlates.textFormat == "kkk" then
 		text = format("%.1fk", amount / 1000)
 	elseif E.db.DmgAtPlates.textFormat == "csep" then
 		text = DAN:CSEP(amount)
@@ -535,7 +535,7 @@ function DAN:HealEvent(f, spllname, slldmg, healcrt, splld, vrhll)
 	pow = false
 	------------- text
 	if E.db.DmgAtPlates.shwrhll and slldmg == vrhll then
-		if E.db.DmgAtPlates.textFormat == "kk" then
+		if E.db.DmgAtPlates.textFormat == "kkk" then
 			text = format("Перелечено: %.1fk", ( vrhll/ 1000))
 		elseif E.db.DmgAtPlates.textFormat == "csep" then
 			text = "Перелечено: "..DAN:CSEP((vrhll))
@@ -545,13 +545,15 @@ function DAN:HealEvent(f, spllname, slldmg, healcrt, splld, vrhll)
 	elseif not E.db.DmgAtPlates.shwrhll and slldmg == vrhll then
 		return
 	elseif E.db.DmgAtPlates.shwrhll and slldmg ~= vrhll then
-		if E.db.DmgAtPlates.textFormat == "kk" then
+		if E.db.DmgAtPlates.textFormat == "kkk" then
 			text = format("%.1fk", ((slldmg) / 1000))
 		elseif E.db.DmgAtPlates.textFormat == "csep" then
 			text = DAN:CSEP((slldmg))
 		elseif E.db.DmgAtPlates.textFormat == "none" then
 			text = slldmg --------------------- for another thing
 		end
+	else
+		text = slldmg ---debug
 	end
 	text = "\124cff" .. color .. text .. "\124r"
 	self:DisplayText(f, text, size, alpha, animation, splld, pow, spllname)

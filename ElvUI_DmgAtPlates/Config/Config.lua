@@ -276,7 +276,7 @@ function DAN:DmgAtPlatesOptions()
 						values = {
 							["none"] = Loc["none"],
 							["csep"] = Loc["csep"],
-							["kk"] = Loc["kk"],
+							["kkk"] = Loc["kkk"],
 						},
 						get = function()
 							return E.db.DmgAtPlates.textFormat
