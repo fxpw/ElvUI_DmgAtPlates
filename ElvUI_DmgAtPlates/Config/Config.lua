@@ -39,8 +39,8 @@ function DAN:LoadCmmnOptions()
 	E.db.DmgAtPlates.petttht = E.db.DmgAtPlates.petttht or false
 	E.db.DmgAtPlates.shwrhll = E.db.DmgAtPlates.shwrhll or false
 	E.db.DmgAtPlates.hcrt = E.db.DmgAtPlates.hcrt or "verticalUp"
-	E.db.DmgAtPlates.nhcrt = E.db.DmgAtPlates.onorof or "verticalUp"
-	E.db.DmgAtPlates.hlclr = E.db.DmgAtPlates.hlclr or "ffff00"
+	E.db.DmgAtPlates.nhcrt = E.db.DmgAtPlates.nhcrt or "verticalUp"
+	E.db.DmgAtPlates.hlclr = E.db.DmgAtPlates.hlclr or "0fff00"
 
 end
 

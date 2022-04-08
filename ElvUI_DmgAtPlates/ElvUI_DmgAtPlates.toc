@@ -1,7 +1,7 @@
 ## Interface: 30300
 ## Title: |cff1784d1E|r|cffe5e3e3lvUI|r |cff1784d1D|r|cffe5e3e3mg|r |cff1784d1A|r|cffe5e3e3t|r |cff1784d1P|r|cffe5e3e3lates|r
 ## Author: fxpw
-## Version: 1.11
+## Version: 1.12
 ## Notes: Show combat text at plates
 ## Notes-ruRU: Показывает цифорки красивые на плейтах
 ## RequiredDeps: ElvUI

@@ -150,7 +150,6 @@ local pguid
 -------------------------------------------- fontstring
 ------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------
-
 function DAN:GFP(fontName)
 	local fontPath = LSM:Fetch("font", fontName) or "Fonts\\FRIZQT__.TTF"
 	return fontPath
@@ -383,6 +382,7 @@ function DAN:Animate(fontString, anchorFrame, duration, animation)
 	end
 --   print(410)
 end
+
 ------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------
 --------------------------------------------- dt
@@ -749,7 +749,6 @@ function DAN:PLAYER_ENTERING_WORLD(...)
 	DAN.DmgTextFrame:SetScript("OnEvent",function(event,...)
 		DAN:ChckDmgEvnt(...)
 	end)
-	
 end
 
 function DAN:Initialize()
