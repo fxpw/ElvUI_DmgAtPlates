@@ -389,6 +389,7 @@ end
 ------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------
 function DAN:DisplayText(f, text, size, alpha, animation, spellId, pow, spellName)
+	if not f then return end
 	local fontString
 	local icon
 
@@ -441,6 +442,7 @@ local numDamageEvents = 0
 local lastDamageEventTime
 local runningAverageDamageEvents = 0
 function DAN:DamageEvent(f, spellName, amount, school, crit, spellId)
+	if not f then return end
 	local text, animation, pow, size, alpha
 	----- определение чего то спеллнейма
   	local autoattack = spellName == AutoAttack or spellName == AutoShot or spellName == "pet"
@@ -519,6 +521,7 @@ function DAN:DamageEvent(f, spellName, amount, school, crit, spellId)
 end
 
 function DAN:HealEvent(f, spllname, slldmg, healcrt, splld, vrhll)
+	if not f then return end
 	local text, animation, pow, size, alpha, color
 	----------------------- animation
 	if healcrt then
@@ -560,6 +563,7 @@ function DAN:HealEvent(f, spllname, slldmg, healcrt, splld, vrhll)
 end
 
 function DAN:MissEvent(f, spellName, missType, spellId)
+	if not f then return end
 	local text, animation, pow, size, alpha, color
 	----------------------- animation
 	animation = "verticalDown"
@@ -577,6 +581,7 @@ function DAN:MissEvent(f, spellName, missType, spellId)
 	self:DisplayText(f, text, size, alpha, animation, spellId, pow, spellName)
 end
 function DAN:MissEventPet(f, spellName, missType, spellId)
+	if not f then return end
 	local text, animation, pow, size, alpha, color
 	----------------------- animation
 	animation = "verticalDown"
@@ -595,6 +600,7 @@ function DAN:MissEventPet(f, spellName, missType, spellId)
 end
 
 function DAN:DispelEvent(f, spellName, infodis, spellId)
+	if not f then return end
 	local text, animation, pow, size, alpha, color
 	----------------------- animation
 	animation = "fountain"
@@ -615,6 +621,7 @@ end
 
 
 function DAN:SpellInterruptEvent(f,  spllname, splld, intrspll)
+	if not f then return end
 	local text, animation, pow, size, alpha, color
 	-- print(spllname, splld, intrspll)
 	----------------------- animation
@@ -651,47 +658,47 @@ function DAN:ChckDmgEvnt(...)
 	-- end
 	if args[4] == pguid and args[7] ~= pguid then
 		if dse[args[3]] and E.db.DmgAtPlates.pttdt then
-			for frame in pairs(NP.VisiblePlates) do
-				if frame.guid == args[7] then
-					DAN:DamageEvent(frame, args[11], args[13], args[12], args[19], args[10])
-				end
-			end
+			-- for frame in pairs(NP.VisiblePlates) do
+				-- if frame.guid == args[7] then
+					DAN:DamageEvent(NP:SearchForFrame(args[7],_,args[8]), args[11], args[13], args[12], args[19], args[10])
+				-- end
+			-- end
 		elseif  args[3] == "SWING_DAMAGE" and E.db.DmgAtPlates.pttdt  then
-			for frame in pairs(NP.VisiblePlates) do
-				if frame.guid == args[7] then
-					DAN:DamageEvent(frame, AutoAttack, args[10], 1, args[19], 6603)
-				end
-			end
+			-- for frame in pairs(NP.VisiblePlates) do
+				-- if frame.guid == args[7] then
+					DAN:DamageEvent(NP:SearchForFrame(args[7],_,args[8]), AutoAttack, args[10], 1, args[19], 6603)
+				-- end
+			-- end
 		elseif mse[args[3]] and E.db.DmgAtPlates.pttdt  then
-			for frame in pairs(NP.VisiblePlates) do
-				if frame.guid == args[7] then
-					DAN:MissEvent(frame, args[11], args[13], args[10])
-				end
-			end
+			-- for frame in pairs(NP.VisiblePlates) do
+				-- if frame.guid == args[7] then
+					DAN:MissEvent(NP:SearchForFrame(args[7],_,args[8]), args[11], args[13], args[10])
+				-- end
+			-- end
 		elseif  args[3] == "SPELL_DISPEL" and E.db.DmgAtPlates.pttdt  then
-			for frame in pairs(NP.VisiblePlates) do
-				if frame.guid == args[7] then
-					DAN:DispelEvent(frame, args[11], args[14], args[13])
-				end
-			end
+			-- for frame in pairs(NP.VisiblePlates) do
+				-- if frame.guid == args[7] then
+					DAN:DispelEvent(NP:SearchForFrame(args[7],_,args[8]), args[11], args[14], args[13])
+				-- end
+			-- end
 		elseif hse[args[3]] and E.db.DmgAtPlates.pttht  then
-			for frame in pairs(NP.VisiblePlates) do
-				if frame.guid == args[7] then
-					DAN:HealEvent(frame, args[11], args[13], args[16], args[10],args[14])
-				end
-			end
+			-- for frame in pairs(NP.VisiblePlates) do
+				-- if frame.guid == args[7] then
+					DAN:HealEvent(NP:SearchForFrame(args[7],_,args[8]), args[11], args[13], args[16], args[10],args[14])
+				-- end
+			-- end
 		elseif csi[args[3]] and E.db.DmgAtPlates.pttdt then
-			for frame in pairs(NP.VisiblePlates) do
-				if frame.guid == args[7] then
-					DAN:SpellInterruptEvent(frame, args[11],args[10],args[14])
-				end
-			end
+			-- for frame in pairs(NP.VisiblePlates) do
+				-- if frame.guid == args[7] then
+					DAN:SpellInterruptEvent(NP:SearchForFrame(args[7],_,args[8]), args[11],args[10],args[14])
+				-- end
+			-- end
 		elseif args[3] == "SWING_MISSED" and E.db.DmgAtPlates.pttdt then
-			for frame in pairs(NP.VisiblePlates) do
-				if frame.guid == args[7] then
-					DAN:MissEvent(frame, AutoAttack, AutoAttack , 6603)
-				end
-			end
+			-- for frame in pairs(NP.VisiblePlates) do
+				-- if frame.guid == args[7] then
+					DAN:MissEvent(NP:SearchForFrame(args[7],_,args[8]), AutoAttack, AutoAttack , 6603)
+				-- end
+			-- end
 		end
 	elseif args[7] == pguid then
 		if dse[args[3]] and E.db.DmgAtPlates.ttpdt then
@@ -711,29 +718,29 @@ function DAN:ChckDmgEvnt(...)
 		end
 	elseif bit.band(args[6], BITMASK_PETS) > 0 and bit.band(args[6], COMBATLOG_OBJECT_AFFILIATION_MINE) > 0 then -- pet/guard events
 		if dse[args[3]] and E.db.DmgAtPlates.petttdt  then
-			for frame in pairs(NP.VisiblePlates) do
-				if frame.guid == args[7] then
-					DAN:DamageEvent(frame, args[11], args[13], "pet", args[19], args[10])
-				end
-			end
+			-- for frame in pairs(NP.VisiblePlates) do
+				-- if frame.guid == args[7] then
+					DAN:DamageEvent(NP:SearchForFrame(args[7],_,args[8]), args[11], args[13], "pet", args[19], args[10])
+				-- end
+			-- end
 		elseif args[3] == "SWING_DAMAGE" and E.db.DmgAtPlates.petttdt then
-			for frame in pairs(NP.VisiblePlates) do
-				if frame.guid == args[7] then
-					DAN:DamageEvent(frame, AutoAttackPet, args[10], "pet", args[19], 315235)
-				end
-			end
+			-- for frame in pairs(NP.VisiblePlates) do
+				-- if frame.guid == args[7] then
+					DAN:DamageEvent(NP:SearchForFrame(args[7],_,args[8]), AutoAttackPet, args[10], "pet", args[19], 315235)
+				-- end
+			-- end
 		elseif mse[args[3]] and E.db.DmgAtPlates.petttdt then
-			for frame in pairs(NP.VisiblePlates) do
-				if frame.guid == args[7] then
-					DAN:MissEventPet(frame, args[11], args[13], args[10])
-				end
-			end
+			-- for frame in pairs(NP.VisiblePlates) do
+				-- if frame.guid == args[7] then
+					DAN:MissEventPet(NP:SearchForFrame(args[7],_,args[8]), args[11], args[13], args[10])
+				-- end
+			-- end
 		elseif hse[args[3]] and E.db.DmgAtPlates.petttht then
-			for frame in pairs(NP.VisiblePlates) do
-				if frame.guid == args[7] then
-					DAN:HealEvent(frame, args[11], args[13], args[16], args[10],args[14])
-				end
-			end
+			-- for frame in pairs(NP.VisiblePlates) do
+				-- if frame.guid == args[7] then
+					DAN:HealEvent(NP:SearchForFrame(args[7],_,args[8]), args[11], args[13], args[16], args[10],args[14])
+				-- end
+			-- end
 		end
 	end
 end
@@ -777,7 +784,6 @@ function DAN:OnEnable()
 		end)
 	-- end
 end
-
 
 E:RegisterModule(DAN:GetName())
 
