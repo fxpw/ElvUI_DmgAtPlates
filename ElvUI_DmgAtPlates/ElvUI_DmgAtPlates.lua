@@ -1,7 +1,7 @@
 ---@diagnostic disable-next-line: deprecated
 local E, L, V, P, G, _ = unpack(ElvUI);
 local NP = E:GetModule('NamePlates');
-local EP = E.Libs.EP 
+local EP = E.Libs.EP
 local DAN = E:NewModule('ElvUI_DmgAtPlates', 'AceTimer-3.0', 'AceHook-3.0', 'AceEvent-3.0')
 local LibEasing = LibStub("LibEasing-1.0")
 local Loc = LibStub("AceLocale-3.0"):GetLocale("ElvUI_DmgAtPlates")
@@ -143,8 +143,15 @@ local ptc
 local pn
 local pguid
 
+-- ----methods
+-- do
+-- 	local argsMT = {__index = {}}
+-- 	local args = setmetatable({}, argsMT)
+-- 	function argsMT:IsSpellID(...)
+-- 		return tIndexOf({...}, args.spellId) ~= nil
+-- 	end
 
-
+-- end
 ------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------
 -------------------------------------------- fontstring
@@ -189,7 +196,7 @@ function DAN:GFS()
 
 		-- if fontString.icon.button then
 		-- 	fontString.icon.button:Show()
-		-- -- end
+		-- 
 
 	return fontString
 end
@@ -618,8 +625,6 @@ function DAN:DispelEvent(f, spellName, infodis, spellId)
 	self:DisplayText(f, text, size, alpha, animation, spellId, pow, spellName)
 end
 
-
-
 function DAN:SpellInterruptEvent(f,  spllname, splld, intrspll)
 	if not f then return end
 	local text, animation, pow, size, alpha, color
@@ -648,7 +653,7 @@ end
 ------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------
 local BITMASK_PETS = COMBATLOG_OBJECT_TYPE_PET + COMBATLOG_OBJECT_TYPE_GUARDIAN
-function DAN:ChckDmgEvnt(...)
+function DAN:FilterEvent(...)
 	if not E.db.DmgAtPlates.onorof then return end
 	-- print("rab")
 	-- local vnt1,tm2,sbvnt3,guidwhcst4,whcst5,flags6,tgtguid7,tgtcst8,_,splld10,spllname11,schl12,slldmg13,infodis14,intrspll15,healcrt16,_,_,crt19,_,_,_,_,_,_,_ = ...
@@ -656,49 +661,21 @@ function DAN:ChckDmgEvnt(...)
 	-- for k,v in pairs(args) do
 	-- 	print(k,v)
 	-- end
-	if args[4] == pguid and args[7] ~= pguid then
+	if (args[4] == pguid and args[7] ~= pguid) or (args[4] ~= pguid and args[7] ~= pguid and  E.db.DmgAtPlates.sfap) then
 		if dse[args[3]] and E.db.DmgAtPlates.pttdt then
-			-- for frame in pairs(NP.VisiblePlates) do
-				-- if frame.guid == args[7] then
-					DAN:DamageEvent(NP:SearchForFrame(args[7],_,args[8]), args[11], args[13], args[12], args[19], args[10])
-				-- end
-			-- end
+			DAN:DamageEvent(NP:SearchForFrame(args[7],_,args[8]), args[11], args[13], args[12], args[19], args[10])
 		elseif  args[3] == "SWING_DAMAGE" and E.db.DmgAtPlates.pttdt  then
-			-- for frame in pairs(NP.VisiblePlates) do
-				-- if frame.guid == args[7] then
-					DAN:DamageEvent(NP:SearchForFrame(args[7],_,args[8]), AutoAttack, args[10], 1, args[19], 6603)
-				-- end
-			-- end
+			DAN:DamageEvent(NP:SearchForFrame(args[7],_,args[8]), AutoAttack, args[10], 1, args[19], 6603)
 		elseif mse[args[3]] and E.db.DmgAtPlates.pttdt  then
-			-- for frame in pairs(NP.VisiblePlates) do
-				-- if frame.guid == args[7] then
-					DAN:MissEvent(NP:SearchForFrame(args[7],_,args[8]), args[11], args[13], args[10])
-				-- end
-			-- end
+			DAN:MissEvent(NP:SearchForFrame(args[7],_,args[8]), args[11], args[13], args[10])
 		elseif  args[3] == "SPELL_DISPEL" and E.db.DmgAtPlates.pttdt  then
-			-- for frame in pairs(NP.VisiblePlates) do
-				-- if frame.guid == args[7] then
-					DAN:DispelEvent(NP:SearchForFrame(args[7],_,args[8]), args[11], args[14], args[13])
-				-- end
-			-- end
+			DAN:DispelEvent(NP:SearchForFrame(args[7],_,args[8]), args[11], args[14], args[13])
 		elseif hse[args[3]] and E.db.DmgAtPlates.pttht  then
-			-- for frame in pairs(NP.VisiblePlates) do
-				-- if frame.guid == args[7] then
-					DAN:HealEvent(NP:SearchForFrame(args[7],_,args[8]), args[11], args[13], args[16], args[10],args[14])
-				-- end
-			-- end
+			DAN:HealEvent(NP:SearchForFrame(args[7],_,args[8]), args[11], args[13], args[16], args[10],args[14])
 		elseif csi[args[3]] and E.db.DmgAtPlates.pttdt then
-			-- for frame in pairs(NP.VisiblePlates) do
-				-- if frame.guid == args[7] then
-					DAN:SpellInterruptEvent(NP:SearchForFrame(args[7],_,args[8]), args[11],args[10],args[14])
-				-- end
-			-- end
+			DAN:SpellInterruptEvent(NP:SearchForFrame(args[7],_,args[8]), args[11],args[10],args[14])
 		elseif args[3] == "SWING_MISSED" and E.db.DmgAtPlates.pttdt then
-			-- for frame in pairs(NP.VisiblePlates) do
-				-- if frame.guid == args[7] then
-					DAN:MissEvent(NP:SearchForFrame(args[7],_,args[8]), AutoAttack, AutoAttack , 6603)
-				-- end
-			-- end
+			DAN:MissEvent(NP:SearchForFrame(args[7],_,args[8]), AutoAttack, AutoAttack , 6603)
 		end
 	elseif args[7] == pguid then
 		if dse[args[3]] and E.db.DmgAtPlates.ttpdt then
@@ -718,29 +695,13 @@ function DAN:ChckDmgEvnt(...)
 		end
 	elseif bit.band(args[6], BITMASK_PETS) > 0 and bit.band(args[6], COMBATLOG_OBJECT_AFFILIATION_MINE) > 0 then -- pet/guard events
 		if dse[args[3]] and E.db.DmgAtPlates.petttdt  then
-			-- for frame in pairs(NP.VisiblePlates) do
-				-- if frame.guid == args[7] then
-					DAN:DamageEvent(NP:SearchForFrame(args[7],_,args[8]), args[11], args[13], "pet", args[19], args[10])
-				-- end
-			-- end
+			DAN:DamageEvent(NP:SearchForFrame(args[7],_,args[8]), args[11], args[13], "pet", args[19], args[10])
 		elseif args[3] == "SWING_DAMAGE" and E.db.DmgAtPlates.petttdt then
-			-- for frame in pairs(NP.VisiblePlates) do
-				-- if frame.guid == args[7] then
-					DAN:DamageEvent(NP:SearchForFrame(args[7],_,args[8]), AutoAttackPet, args[10], "pet", args[19], 315235)
-				-- end
-			-- end
+			DAN:DamageEvent(NP:SearchForFrame(args[7],_,args[8]), AutoAttackPet, args[10], "pet", args[19], 315235)
 		elseif mse[args[3]] and E.db.DmgAtPlates.petttdt then
-			-- for frame in pairs(NP.VisiblePlates) do
-				-- if frame.guid == args[7] then
-					DAN:MissEventPet(NP:SearchForFrame(args[7],_,args[8]), args[11], args[13], args[10])
-				-- end
-			-- end
+			DAN:MissEventPet(NP:SearchForFrame(args[7],_,args[8]), args[11], args[13], args[10])
 		elseif hse[args[3]] and E.db.DmgAtPlates.petttht then
-			-- for frame in pairs(NP.VisiblePlates) do
-				-- if frame.guid == args[7] then
-					DAN:HealEvent(NP:SearchForFrame(args[7],_,args[8]), args[11], args[13], args[16], args[10],args[14])
-				-- end
-			-- end
+			DAN:HealEvent(NP:SearchForFrame(args[7],_,args[8]), args[11], args[13], args[16], args[10],args[14])
 		end
 	end
 end
@@ -754,7 +715,7 @@ function DAN:PLAYER_ENTERING_WORLD(...)
 	pguid = UnitGUID("player")
 	DAN.DmgTextFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 	DAN.DmgTextFrame:SetScript("OnEvent",function(event,...)
-		DAN:ChckDmgEvnt(...)
+		DAN:FilterEvent(...)
 	end)
 end
 
@@ -773,16 +734,14 @@ end
 
 function DAN:OnDisable()
 	-- if not E.db.DmgAtPlates.onorof then
-		DAN.DmgTextFrame:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-	-- end
+	DAN.DmgTextFrame:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 end
 function DAN:OnEnable()
 	-- if E.db.DmgAtPlates.onorof then
-		DAN.DmgTextFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-		DAN.DmgTextFrame:SetScript("OnEvent",function(event,...)
-			DAN:ChckDmgEvnt(...)
-		end)
-	-- end
+	DAN.DmgTextFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+	DAN.DmgTextFrame:SetScript("OnEvent",function(event,...)
+		DAN:FilterEvent(...)
+	end)
 end
 
 E:RegisterModule(DAN:GetName())

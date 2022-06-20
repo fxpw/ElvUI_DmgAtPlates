@@ -41,6 +41,7 @@ function DAN:LoadCmmnOptions()
 	E.db.DmgAtPlates.hcrt = E.db.DmgAtPlates.hcrt or "verticalUp"
 	E.db.DmgAtPlates.nhcrt = E.db.DmgAtPlates.nhcrt or "verticalUp"
 	E.db.DmgAtPlates.hlclr = E.db.DmgAtPlates.hlclr or "0fff00"
+	E.db.DmgAtPlates.sfap = E.db.DmgAtPlates.sfap or false
 
 end
 
@@ -76,7 +77,7 @@ function DAN:DmgAtPlatesOptions()
 		order = 55,
 		type = "group",
 		childGroups = "tab",
-		name = string.format("|cff1784d1%s|r", "Damage At Plates"),
+		name = string.format("|cff00FF00%s|r", "DmgAtPlates"),
 		args = {
 			common = {
 				order = 1,
@@ -117,18 +118,28 @@ function DAN:DmgAtPlatesOptions()
 							E.db.DmgAtPlates.showIcon = value
 						end
 					},
-					spacer1 = {
+					sfap = {
 						order = 4,
-						type = "description",
-						name = " "
+						type = "toggle",
+						name = Loc["sfap"],
+						desc = Loc["sfap"],
+						get = function(info) return E.db.DmgAtPlates.sfap end,
+						set = function(info, value)
+							E.db.DmgAtPlates.sfap = value
+						end
 					},
-					spacer2 = {
+					spacer1 = {
 						order = 5,
 						type = "description",
 						name = " "
 					},
-					font = {
+					spacer2 = {
 						order = 6,
+						type = "description",
+						name = " "
+					},
+					font = {
+						order = 7,
 						type = "select",
 						name = Loc["font"],
 						dialogControl = "LSM30_Font",
@@ -141,13 +152,13 @@ function DAN:DmgAtPlatesOptions()
 						end
 					},
 					fontSize = {
-						order = 7,
+						order = 8,
 						type = "range",
 						name = Loc["fntsize"],
 						min = 5, max = 72, step = 1,
 					},
 					fontAlpha = {
-						order = 8,
+						order = 9,
 						type = "range",
 						name = Loc["otfAlpha"],
 						min = 0.1,
@@ -155,7 +166,7 @@ function DAN:DmgAtPlatesOptions()
 						step = .01,
 					},
 					fontOutline = {
-						order = 9,
+						order = 10,
 						type = "select",
 						name = Loc["Font Outline"],
 						values = {
@@ -166,12 +177,12 @@ function DAN:DmgAtPlatesOptions()
 						}
 					},
 					header2 = {
-						order = 10,
+						order = 11,
 						type = "header",
 						name = Loc["offtarget"]
 					},
 					sfftrgt = {
-						order = 11,
+						order = 12,
 						type = "toggle",
 						name = Loc["offtarget"],
 						desc = "",
@@ -183,7 +194,7 @@ function DAN:DmgAtPlatesOptions()
 						end,
 					},
 					sfftrgtSize = {
-						order = 12,
+						order = 13,
 						type = "range",
 						name = Loc["otfSize"],
 						desc = "",
@@ -201,7 +212,7 @@ function DAN:DmgAtPlatesOptions()
 						end,
 					},
 					sfftrgtAlpha = {
-						order = 13,
+						order = 14,
 						type = "range",
 						name = Loc["otfAlpha"],
 						desc = "",
@@ -219,13 +230,13 @@ function DAN:DmgAtPlatesOptions()
 						end,
 					},
 					header3 = {
-						order = 14,
+						order = 15,
 						type = "header",
 						name = Loc["SmallHits"]
 					},
 					smallHits = {
 						type = "toggle",
-						order = 15,
+						order = 16,
 						name = Loc["SmallHits"],
 						desc = Loc["SmallHitsdesc"],
 						disabled = function()
@@ -239,7 +250,7 @@ function DAN:DmgAtPlatesOptions()
 						end,
 					},
 					smallHitsScale = {
-						order = 16,
+						order = 17,
 						type = "range",
 						name = Loc["SmallHitsScale"],
 						desc = "",
@@ -258,7 +269,7 @@ function DAN:DmgAtPlatesOptions()
 						width = "double"
 					},
 					smallHitsHide = {
-						order = 17,
+						order = 18,
 						type = "toggle",
 						name = Loc["SmallHitsHide"],
 						desc = Loc["SmallHitsHidedesc"],
@@ -270,7 +281,7 @@ function DAN:DmgAtPlatesOptions()
 						end,
 					},
 					textFormat = {
-						order = 18,
+						order = 19,
 						type = "select",
 						name = Loc["textformat"],
 						values = {
